@@ -1,0 +1,22 @@
+{
+  "name": "@otchy/sim-doc-db",
+  "version": "0.0.0",
+  "description": "Simple in memory document database",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/otchy210/sim-doc-db.git"
+  },
+  "author": "Toru Ochiai <npm@otchy.net> (https://twitter.com/otchy)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/otchy210/sim-doc-db/issues"
+  },
+  "homepage": "https://github.com/otchy210/sim-doc-db#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+}
