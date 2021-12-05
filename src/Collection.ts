@@ -11,23 +11,50 @@ export type Field = {
 };
 
 export type Document = {
-    [key: string]: ValueType;
+    id?: number;
+    values: {
+        [key: string]: ValueType;
+    }
 };
 
 export class Collection {
-    private indexed: Map<string, boolean>;
+    private counter: number;
+    private fields: Map<string, Field>;
+    private documents: Map<number, Document>;
 
     constructor(fields: Field[]) {
-        this.indexed = new Map();
+        this.counter = 0;
+        this.fields = new Map();
+        this.documents = new Map();;
         fields.forEach(field => {
-            this.indexed.set(field.name, field.indexed);
+            this.fields.set(field.name, field);
         });
     }
 
-    public isIndexed(fieldName: string): boolean {
-        if (!this.indexed.has(fieldName)) {
+    public isField(fieldName: string): boolean {
+        return this.fields.has(fieldName);
+    }
+
+    public getField(fieldName: string): Field {
+        if (!this.isField(fieldName)) {
             throw new Error(`Unknown field name: ${fieldName}`);
         }
-        return this.indexed.get(fieldName) as boolean;
+        return this.fields.get(fieldName) as Field;
+    }
+
+    public add(document: Document): Document {
+        if (document.id !== undefined) {
+            throw new Error(`Not new Document: ${document.id}`);
+        }
+        document.id = (this.counter += 1);
+        this.documents.set(document.id, document);
+        return document;
+    }
+
+    public get(id: number): Document {
+        if (!this.documents.has(id)) {
+            throw new Error(`Unknown id: ${id}`);
+        }
+        return this.documents.get(id) as Document;
     }
 }
