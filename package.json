@@ -1,14 +1,15 @@
 {
   "name": "@otchy/sim-doc-db",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Simple in memory document database",
+  "type": "module",
   "main": "dist/index.js",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "prepare": "npm run build"
   },
   "repository": {
@@ -25,6 +26,17 @@
     "access": "public"
   },
   "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "jest": "^27.4.3",
+    "ts-jest": "^27.1.0",
     "typescript": "^4.5.2"
+  },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "useESM": true
+      }
+    },
+    "preset": "ts-jest/presets/default-esm"
   }
 }

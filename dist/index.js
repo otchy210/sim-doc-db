@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function helloWorld() {
+export default function helloWorld() {
     console.log('Hello woooooooold!');
 }
-exports.default = helloWorld;
 ;
