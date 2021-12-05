@@ -18,5 +18,8 @@
   "homepage": "https://github.com/otchy210/sim-doc-db#readme",
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.2"
   }
 }
