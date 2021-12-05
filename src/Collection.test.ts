@@ -1,4 +1,4 @@
-import { Collection, Document } from './Collection';
+import { Collection } from './Collection';
 
 describe('Collection', ()=> {
     const collection = new Collection([{
@@ -9,6 +9,14 @@ describe('Collection', ()=> {
         name: 'noindexed-boolean',
         type: 'boolean',
         indexed: false
+    }, {
+        name: 'indexed-string-array',
+        type: 'string[]',
+        indexed: true
+    }, {
+        name: 'indexed-number-array',
+        type: 'number[]',
+        indexed: true
     }]);
 
     it('isField works', () => {
@@ -35,5 +43,25 @@ describe('Collection', ()=> {
             collection.get(99);
         }).toThrow('Unknown id:');
         expect(collection.get(1).id).toBe(1);
-    })
+    });
+
+    it('validateValues works', () => {
+        expect(() => {
+            collection.add({values: {'unknown-field': true}});
+        }).toThrow('Unknown field name:');
+        expect(() => {
+            collection.add({values: {'indexed-string': true}});
+        }).toThrow('Type mismatched: string -> boolean');
+        expect(() => {
+            collection.add({values: {'indexed-string-array': true}});
+        }).toThrow('Type mismatched: boolean != array');
+        expect(() => {
+            collection.add({values: {'indexed-string-array': [true]}});
+        }).toThrow('Type mismatched: string[] -> boolean[]');
+
+        expect(collection.add({values: {'indexed-string': ''}})).toBeTruthy();
+        expect(collection.add({values: {'noindexed-boolean': false}})).toBeTruthy();
+        expect(collection.add({values: {'indexed-string-array': ['a', 'b', 'c']}})).toBeTruthy();
+        expect(collection.add({values: {'indexed-number-array': [0, 1, 2]}})).toBeTruthy();
+    });
 });

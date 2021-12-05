@@ -1,15 +1,37 @@
 export class Collection {
-    indexed;
+    counter;
+    fields;
+    documents;
     constructor(fields) {
-        this.indexed = new Map();
+        this.counter = 0;
+        this.fields = new Map();
+        this.documents = new Map();
+        ;
         fields.forEach(field => {
-            this.indexed.set(field.name, field.indexed);
+            this.fields.set(field.name, field);
         });
     }
-    isIndexed(fieldName) {
-        if (!this.indexed.has(fieldName)) {
+    isField(fieldName) {
+        return this.fields.has(fieldName);
+    }
+    getField(fieldName) {
+        if (!this.isField(fieldName)) {
             throw new Error(`Unknown field name: ${fieldName}`);
         }
-        return this.indexed.get(fieldName);
+        return this.fields.get(fieldName);
+    }
+    add(document) {
+        if (document.id !== undefined) {
+            throw new Error(`Not new Document: ${document.id}`);
+        }
+        document.id = (this.counter += 1);
+        this.documents.set(document.id, document);
+        return document;
+    }
+    get(id) {
+        if (!this.documents.has(id)) {
+            throw new Error(`Unknown id: ${id}`);
+        }
+        return this.documents.get(id);
     }
 }

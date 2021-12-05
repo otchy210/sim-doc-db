@@ -7,11 +7,19 @@ export declare type Field = {
     indexed: boolean;
 };
 export declare type Document = {
-    [key: string]: ValueType;
+    id?: number;
+    values: {
+        [key: string]: ValueType;
+    };
 };
 export declare class Collection {
-    private indexed;
+    private counter;
+    private fields;
+    private documents;
     constructor(fields: Field[]);
-    isIndexed(fieldName: string): boolean;
+    isField(fieldName: string): boolean;
+    getField(fieldName: string): Field;
+    add(document: Document): Document;
+    get(id: number): Document;
 }
 export {};
