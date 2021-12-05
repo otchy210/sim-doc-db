@@ -1,1 +1,2 @@
-export default function helloWorld(): void;
+import { Collection } from './Collection';
+export { Collection };

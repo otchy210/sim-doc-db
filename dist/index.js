@@ -1,4 +1,2 @@
-export default function helloWorld() {
-    console.log('Hello woooooooold!');
-}
-;
+import { Collection } from './Collection';
+export { Collection };
