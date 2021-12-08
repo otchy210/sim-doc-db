@@ -49,6 +49,38 @@ export class Collection {
         this.validateValues(document);
         document.id = (this.counter += 1);
         this.documents.set(document.id, document);
+        this.addIndex(document);
+        return document;
+    }
+
+    public get(id: number): Document {
+        if (!this.has(id)) {
+            throw new Error(`Unknown id: ${id}`);
+        }
+        return this.documents.get(id) as Document;
+    }
+
+    public update(document: Document): Document {
+        if (document.id === undefined) {
+            throw new Error('Document has no id');
+        }
+        this.validateValues(document);
+        const id = document.id;
+        const existingDocument = this.get(id);
+        this.documents.set(id, document);
+        this.removeIndex(id);
+        this.addIndex(document);
+        return existingDocument;
+    }
+
+    public has(id: number): boolean {
+        return this.documents.has(id);
+    }
+
+    public remove(id: number): Document {
+        const document = this.get(id);
+        this.documents.delete(id);
+        this.removeIndex(id);
         return document;
     }
 
@@ -82,10 +114,9 @@ export class Collection {
         }
     }
 
-    public get(id: number): Document {
-        if (!this.documents.has(id)) {
-            throw new Error(`Unknown id: ${id}`);
-        }
-        return this.documents.get(id) as Document;
+    private addIndex(document: Document): void {
+    }
+
+    private removeIndex(id: number): void {
     }
 }

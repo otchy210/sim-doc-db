@@ -33,16 +33,35 @@ describe('Collection', ()=> {
         }).toThrow('Unknown field name:');
     });
 
-    it('add / get works', () => {
+    it('add / has / get / update / remove works', () => {
         expect(() => {
             collection.add({id: 99, values: {}});
         }).toThrow('Not new Document:');
-        expect(collection.add({values: {}}).id).toBe(1);
+        expect(collection.add({values: {'indexed-string': 'initial value'}}).id).toBe(1);
 
+        expect(collection.has(99)).toBe(false);
         expect(() => {
             collection.get(99);
         }).toThrow('Unknown id:');
+        expect(collection.has(1)).toBe(true);
         expect(collection.get(1).id).toBe(1);
+
+        expect(() => {
+            collection.update({values: {}});
+        }).toThrow('Document has no id');
+        expect(() => {
+            collection.update({id: 99, values: {}});
+        }).toThrow('Unknown id:');
+        expect(collection.update({
+            id: 1, values: {'indexed-string': 'updated value'}
+        }).values['indexed-string']).toBe('initial value');
+        expect(collection.get(1).values['indexed-string']).toBe('updated value');
+
+        expect(() => {
+            collection.remove(99)
+        }).toThrow('Unknown id:');
+        expect(collection.remove(1).id).toBe(1);
+        expect(collection.has(1)).toBe(false);
     });
 
     it('validateValues works', () => {
