@@ -18,14 +18,11 @@ export type Document = {
 };
 
 export class Collection {
-    private counter: number;
-    private fields: Map<string, Field>;
-    private documents: Map<number, Document>;
+    private counter: number = 0;
+    private fields: Map<string, Field> = new Map();
+    private documents: Map<number, Document> = new Map();
 
     constructor(fields: Field[]) {
-        this.counter = 0;
-        this.fields = new Map();
-        this.documents = new Map();;
         fields.forEach(field => {
             this.fields.set(field.name, field);
         });
