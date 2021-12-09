@@ -1,5 +1,5 @@
 export class ExactMatchIndex<T> {
-    private index: Map<T, Set<number>> = new Map();
+    private index = new Map<T, Set<number>>();
 
     public add(id: number, values: T[]): void {
         values.forEach(value => {
