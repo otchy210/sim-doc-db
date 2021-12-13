@@ -45,6 +45,7 @@ class TrieNode {
 export class PartialMatchIndex {
     private monogramRoot = new TrieNode();
     private bigramRoot = new TrieNode();
+    private trigramRoot = new TrieNode();
 
     public add(id: number, values: string[]): void {
         values.forEach(value => this.addSingle(id, value));
@@ -61,6 +62,14 @@ export class PartialMatchIndex {
                     .getOrNewChild(byte)
                     .getOrNewChild(nextByte)
                     .add(id);
+                if (i < bytes.length - 2) {
+                    const nextnextByte = bytes[i + 2];
+                    this.trigramRoot
+                        .getOrNewChild(byte)
+                        .getOrNewChild(nextByte)
+                        .getOrNewChild(nextnextByte)
+                        .add(id);
+                }
             }
         }
     }
@@ -75,12 +84,20 @@ export class PartialMatchIndex {
                 .getOrNewChild(bytes[0])
                 .getOrNewChild(bytes[1]).get();
         }
-        throw new Error('3 or more bytes are not supported yet.');
+        let current = this.trigramRoot
+            .getOrNewChild(bytes[0])
+            .getOrNewChild(bytes[1])
+            .getOrNewChild(bytes[2]).get();
+        if (bytes.length === 3) {
+            return current;
+        }
+        return current;
     }
 
     public remove(id: number): void {
         this.monogramRoot.removeRecursively(id);
         this.bigramRoot.removeRecursively(id);
+        this.trigramRoot.removeRecursively(id);
     }
 
     public toJsonString(): string {

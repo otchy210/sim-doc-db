@@ -4,8 +4,6 @@ describe('PartialMatchIndex', () => {
     it('works with single byte case', () => {
         const index = new PartialMatchIndex();
 
-        expect(() => {index.find('あ')}).toThrowError('3 or more bytes are not supported yet.');
-
         index.add(1, ['abc', 'def']);
         index.add(2, ['ab', 'de']);
         index.add(3, ['a', 'd']);
@@ -29,8 +27,6 @@ describe('PartialMatchIndex', () => {
 
     it('works with double bytes case', () => {
         const index = new PartialMatchIndex();
-
-        expect(() => {index.find('あ')}).toThrowError('3 or more bytes are not supported yet.');
 
         index.add(1, ['aabbcc', 'abcabc']);
         index.add(2, ['aabb', 'bbcc']);
@@ -64,5 +60,34 @@ describe('PartialMatchIndex', () => {
         expect(index.find('cc').size).toBe(0);
         expect(index.find('ca').size).toBe(0);
         expect(index.find('dd').size).toBe(0);
+    });
+
+    it('works with triple bytes case', () => {
+        const index = new PartialMatchIndex();
+
+        index.add(1, ['aaabbb', 'bbbccc']);
+        index.add(2, ['aaaccc', 'bccc']);
+        index.add(3, ['aaab', 'bbbc']);
+        index.add(4, ['aa', 'bb']);
+
+        expect(index.find('aaa').size).toBe(3);
+        expect(index.find('bbb').size).toBe(2);
+        expect(index.find('ccc').size).toBe(2);
+        expect(index.find('aab').size).toBe(2);
+        expect(index.find('bcc').size).toBe(2);
+        expect(index.find('bbc').size).toBe(2);
+        expect(index.find('abb').size).toBe(1);
+        expect(index.find('ddd').size).toBe(0);
+
+        index.remove(3);
+
+        expect(index.find('aaa').size).toBe(2);
+        expect(index.find('bbb').size).toBe(1);
+        expect(index.find('ccc').size).toBe(2);
+        expect(index.find('aab').size).toBe(1);
+        expect(index.find('bcc').size).toBe(2);
+        expect(index.find('bbc').size).toBe(1);
+        expect(index.find('abb').size).toBe(1);
+        expect(index.find('ddd').size).toBe(0);
     });
 })
