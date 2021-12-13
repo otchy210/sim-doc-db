@@ -90,4 +90,88 @@ describe('PartialMatchIndex', () => {
         expect(index.find('abb').size).toBe(1);
         expect(index.find('ddd').size).toBe(0);
     });
-})
+
+    it('works with more than 3 bytes case', () => {
+        const index = new PartialMatchIndex();
+
+        index.add(1, ['aaaa']);
+        index.add(2, ['aaa']);
+
+        expect(index.find('aaaa').size).toBe(1);
+
+        index.add(3, ['bbbba', 'bbbbb']);
+        index.add(4, ['bbbaa', 'bbbbb']);
+
+        expect(index.find('bbbb').size).toBe(2);
+        expect(index.find('bbba').size).toBe(2);
+
+        index.add(5, ['aaacc']);
+        index.add(6, ['aaccc']);
+
+        expect(index.find('c').size).toBe(2);
+        expect(index.find('cc').size).toBe(2);
+        expect(index.find('ccc').size).toBe(1);
+        expect(index.find('aacc').size).toBe(2);
+        expect(index.find('accc').size).toBe(1);
+        expect(index.find('aaccc').size).toBe(1);
+        expect(index.find('aaaccc').size).toBe(0);
+
+        index.remove(6);
+
+        expect(index.find('c').size).toBe(1);
+        expect(index.find('cc').size).toBe(1);
+        expect(index.find('ccc').size).toBe(0);
+        expect(index.find('aacc').size).toBe(1);
+        expect(index.find('accc').size).toBe(0);
+        expect(index.find('aaccc').size).toBe(0);
+        expect(index.find('aaaccc').size).toBe(0);
+
+        index.remove(5);
+
+        expect(index.find('c').size).toBe(0);
+        expect(index.find('cc').size).toBe(0);
+        expect(index.find('aacc').size).toBe(0);
+    });
+
+    it('works with non ascii char case', () => {
+        const index = new PartialMatchIndex();
+
+        index.add(1, ['あ']);
+        index.add(2, ['あい']);
+        index.add(3, ['あいう']);
+        index.add(4, ['あ🙂']);
+        index.add(5, ['あ🙂い']);
+        index.add(6, ['あ🙂い🙂う']);
+
+        expect(index.find('あ').size).toBe(6);
+        expect(index.find('あい').size).toBe(2);
+        expect(index.find('あいう').size).toBe(1);
+        expect(index.find('🙂').size).toBe(3);
+        expect(index.find('🙂い').size).toBe(2);
+        expect(index.find('🙂う').size).toBe(1);
+
+        index.remove(3);
+        index.remove(6);
+
+        expect(index.find('あ').size).toBe(4);
+        expect(index.find('あい').size).toBe(1);
+        expect(index.find('あいう').size).toBe(0);
+        expect(index.find('🙂').size).toBe(2);
+        expect(index.find('🙂い').size).toBe(1);
+        expect(index.find('🙂う').size).toBe(0);
+
+        index.remove(2);
+        index.remove(5);
+
+        expect(index.find('あ').size).toBe(2);
+        expect(index.find('あい').size).toBe(0);
+        expect(index.find('🙂').size).toBe(1);
+        expect(index.find('🙂い').size).toBe(0);
+
+        index.remove(1);
+        index.remove(4);
+
+        expect(index.find('あ').size).toBe(0);
+        expect(index.find('🙂').size).toBe(0);
+    });
+});

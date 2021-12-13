@@ -3,6 +3,7 @@ import { toByteArray } from "./TextUtils";
 class TrieNode {
     private children = [...Array<TrieNode>(256)];
     private ids = new Set<number>();
+    private positions = new Map<number, Set<number>>();
 
     public getOrNewChild(byte: number): TrieNode {
         if (!this.children[byte]) {
@@ -15,12 +16,38 @@ class TrieNode {
         this.ids.add(id);
     }
 
+    public addWithPos(id: number, pos: number): void {
+        this.add(id);
+        if (!this.positions.has(id)) {
+            this.positions.set(id, new Set());
+        }
+        this.positions.get(id)?.add(pos);
+    }
+
     public get(): Set<number> {
         return this.ids;
     }
 
+    public getPositions(): Map<number, Set<number>> {
+        return this.positions;
+    }
+
+    public getWithPos(offsetMap: Map<number, Set<number>>, index: number): Set<number> {
+        return new Set([...this.ids].filter(id => {
+            const offsets = offsetMap.get(id) ?? [];
+            const position = this.positions.get(id);
+            for(let offset of offsets) {
+                if (position?.has(offset + index)) {
+                    return true;
+                }
+            }
+            return false;
+        }));
+    }
+
     public removeRecursively(id: number): void {
         this.ids.delete(id);
+        this.positions.delete(id);
         this.children
             .filter(node => node)
             .forEach(node => node.removeRecursively(id));
@@ -39,8 +66,6 @@ class TrieNode {
         return json;
     }
 }
-
-
 
 export class PartialMatchIndex {
     private monogramRoot = new TrieNode();
@@ -68,7 +93,7 @@ export class PartialMatchIndex {
                         .getOrNewChild(byte)
                         .getOrNewChild(nextByte)
                         .getOrNewChild(nextnextByte)
-                        .add(id);
+                        .addWithPos(id, i);
                 }
             }
         }
@@ -84,12 +109,25 @@ export class PartialMatchIndex {
                 .getOrNewChild(bytes[0])
                 .getOrNewChild(bytes[1]).get();
         }
-        let current = this.trigramRoot
+        const initialNode = this.trigramRoot
             .getOrNewChild(bytes[0])
             .getOrNewChild(bytes[1])
-            .getOrNewChild(bytes[2]).get();
+            .getOrNewChild(bytes[2]);
+        let current = initialNode.get();
         if (bytes.length === 3) {
             return current;
+        }
+        const offsetMap = initialNode.getPositions();
+        for(let i = 1; i < bytes.length - 2; i++) {
+            const next = this.trigramRoot
+                .getOrNewChild(bytes[i])
+                .getOrNewChild(bytes[i+1])
+                .getOrNewChild(bytes[i+2]).getWithPos(offsetMap, i);
+            // intersection
+            current = new Set([...current].filter(id => next.has(id)));
+            if (current.size === 0) {
+                return current;
+            }
         }
         return current;
     }
