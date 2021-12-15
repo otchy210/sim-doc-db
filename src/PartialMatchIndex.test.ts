@@ -1,4 +1,4 @@
-import { PartialMatchIndex } from './PartialMatchIndex'
+import { PartialMatchIndex } from './PartialMatchIndex';
 
 describe('PartialMatchIndex', () => {
     it('works with single byte case', () => {

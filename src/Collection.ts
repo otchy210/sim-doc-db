@@ -1,6 +1,6 @@
-import { ExactMatchIndex } from "./ExactMatchIndex";
-import { PartialMatchIndex } from "./PartialMatchIndex";
-import { Document, Field, Index, PrimitiveType, Query } from "./types";
+import { ExactMatchIndex } from './ExactMatchIndex';
+import { PartialMatchIndex } from './PartialMatchIndex';
+import { Document, Field, Index, PrimitiveType, Query } from './types';
 
 export class Collection {
     private counter = 0;
@@ -9,27 +9,27 @@ export class Collection {
     private documents = new Map<number, Document>();
 
     constructor(fields: Field[]) {
-        fields.forEach(field => {
-            const {name, type, indexed} = field;
+        fields.forEach((field) => {
+            const { name, type, indexed } = field;
             this.fields.set(name, field);
             if (!indexed) {
                 return;
             }
-            switch(type) {
-            case 'string':
-            case 'string[]':
-                this.indexes.set(name, new PartialMatchIndex());
-                break;
-            case 'number':
-            case 'number[]':
-                this.indexes.set(name, new ExactMatchIndex<number>());
-                break;
-            case 'boolean':
-                this.indexes.set(name, new ExactMatchIndex<boolean>());
-                break;
-            case 'tags':
-                this.indexes.set(name, new ExactMatchIndex<string>());
-                break;
+            switch (type) {
+                case 'string':
+                case 'string[]':
+                    this.indexes.set(name, new PartialMatchIndex());
+                    break;
+                case 'number':
+                case 'number[]':
+                    this.indexes.set(name, new ExactMatchIndex<number>());
+                    break;
+                case 'boolean':
+                    this.indexes.set(name, new ExactMatchIndex<boolean>());
+                    break;
+                case 'tags':
+                    this.indexes.set(name, new ExactMatchIndex<string>());
+                    break;
             }
         });
     }
@@ -50,7 +50,7 @@ export class Collection {
             throw new Error(`Not new Document: ${document.id}`);
         }
         this.validateValues(document);
-        document.id = (this.counter += 1);
+        document.id = this.counter += 1;
         this.documents.set(document.id, document);
         this.addIndex(document);
         return document;
@@ -88,31 +88,32 @@ export class Collection {
     }
 
     private validateValues(document: Document) {
-        for(const entry of Object.entries(document.values)) {
+        for (const entry of Object.entries(document.values)) {
             const [fieldName, value] = entry;
             const field = this.getField(fieldName);
             const fieldType = field.type;
             const valueType = typeof value;
             switch (fieldType) {
-            case 'string':
-            case 'number':
-            case 'boolean':
-                if (fieldType !== valueType) {
-                    throw new Error(`Type mismatched: ${fieldType} -> ${valueType}`);
-                }
-                break;
-            default: // array
-                if (!Array.isArray(value)) {
-                    throw new Error(`Type mismatched: ${valueType} != array`);
-                }
-                if (value.length === 0) {
+                case 'string':
+                case 'number':
+                case 'boolean':
+                    if (fieldType !== valueType) {
+                        throw new Error(`Type mismatched: ${fieldType} -> ${valueType}`);
+                    }
                     break;
-                }
-                const arrayFieldType = fieldType === 'tags' ? 'string' : fieldType.substring(0, fieldType.length - 2);
-                const arrayValueType = typeof value[0];
-                if (arrayFieldType !== arrayValueType) {
-                    throw new Error(`Type mismatched: ${fieldType} -> ${arrayValueType}[]`);
-                }
+                default:
+                    // array
+                    if (!Array.isArray(value)) {
+                        throw new Error(`Type mismatched: ${valueType} != array`);
+                    }
+                    if (value.length === 0) {
+                        break;
+                    }
+                    const arrayFieldType = fieldType === 'tags' ? 'string' : fieldType.substring(0, fieldType.length - 2);
+                    const arrayValueType = typeof value[0];
+                    if (arrayFieldType !== arrayValueType) {
+                        throw new Error(`Type mismatched: ${fieldType} -> ${arrayValueType}[]`);
+                    }
             }
         }
     }
@@ -128,13 +129,13 @@ export class Collection {
             if (Array.isArray(value)) {
                 index.add(id, value);
             } else {
-                index.add(id,[value]);
+                index.add(id, [value]);
             }
         });
     }
 
     private removeIndex(id: number): void {
-        for(const index of this.indexes.values()) {
+        for (const index of this.indexes.values()) {
             index.remove(id);
         }
     }
@@ -152,12 +153,12 @@ export class Collection {
             }
             const index = this.indexes.get(fieldName) as Index<PrimitiveType>;
             const values = Array.isArray(value) ? value : [value];
-            for(const val of values) {
+            for (const val of values) {
                 if (current === undefined) {
                     current = index.find(val);
                 } else {
                     const next = index.find(val);
-                    current = new Set([...current  as Set<number>].filter(id => next.has(id)));
+                    current = new Set([...(current as Set<number>)].filter((id) => next.has(id)));
                 }
                 if (current.size === 0) {
                     return new Set();
@@ -167,6 +168,6 @@ export class Collection {
         if (current === undefined) {
             return new Set();
         }
-        return new Set([...current as Set<number>].map(id => this.documents.get(id) as Document));
+        return new Set([...(current as Set<number>)].map((id) => this.documents.get(id) as Document));
     }
 }

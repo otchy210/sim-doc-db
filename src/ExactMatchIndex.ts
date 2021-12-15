@@ -1,10 +1,10 @@
-import { Index } from "./types";
+import { Index } from './types';
 
 export class ExactMatchIndex<T> implements Index<T> {
     private map = new Map<T, Set<number>>();
 
     public add(id: number, values: T[]): void {
-        values.forEach(value => {
+        values.forEach((value) => {
             if (!this.map.has(value)) {
                 this.map.set(value, new Set());
             }

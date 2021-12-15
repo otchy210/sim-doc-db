@@ -1,5 +1,5 @@
-import { toByteArray } from "./TextUtils";
-import { Index } from "./types";
+import { toByteArray } from './TextUtils';
+import { Index } from './types';
 
 class TrieNode {
     private children = [...Array<TrieNode>(256)];
@@ -34,31 +34,31 @@ class TrieNode {
     }
 
     public getWithPos(offsetMap: Map<number, Set<number>>, index: number): Set<number> {
-        return new Set([...this.ids].filter(id => {
-            const offsets = offsetMap.get(id) ?? [];
-            const position = this.positions.get(id);
-            for(const offset of offsets) {
-                if (position?.has(offset + index)) {
-                    return true;
+        return new Set(
+            [...this.ids].filter((id) => {
+                const offsets = offsetMap.get(id) ?? [];
+                const position = this.positions.get(id);
+                for (const offset of offsets) {
+                    if (position?.has(offset + index)) {
+                        return true;
+                    }
                 }
-            }
-            return false;
-        }));
+                return false;
+            })
+        );
     }
 
     public removeRecursively(id: number): void {
         this.ids.delete(id);
         this.positions.delete(id);
-        this.children
-            .filter(node => node)
-            .forEach(node => node.removeRecursively(id));
+        this.children.filter((node) => node).forEach((node) => node.removeRecursively(id));
     }
 
     public toJson(): object {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const json = {} as any;
         json['___ids___'] = Array.from(this.ids);
-        for(let i = 0; i < this.children.length; i++) {
+        for (let i = 0; i < this.children.length; i++) {
             const child = this.children[i];
             if (!child) {
                 continue;
@@ -75,27 +75,20 @@ export class PartialMatchIndex implements Index<string> {
     private trigramRoot = new TrieNode();
 
     public add(id: number, values: string[]): void {
-        values.forEach(value => this.addSingle(id, value));
+        values.forEach((value) => this.addSingle(id, value));
     }
 
     private addSingle(id: number, value: string): void {
         const bytes = toByteArray(value);
-        for(let i = 0; i < bytes.length; i++) {
+        for (let i = 0; i < bytes.length; i++) {
             const byte = bytes[i];
             this.monogramRoot.getOrNewChild(byte).add(id);
             if (i < bytes.length - 1) {
                 const nextByte = bytes[i + 1];
-                this.bigramRoot
-                    .getOrNewChild(byte)
-                    .getOrNewChild(nextByte)
-                    .add(id);
+                this.bigramRoot.getOrNewChild(byte).getOrNewChild(nextByte).add(id);
                 if (i < bytes.length - 2) {
                     const nextnextByte = bytes[i + 2];
-                    this.trigramRoot
-                        .getOrNewChild(byte)
-                        .getOrNewChild(nextByte)
-                        .getOrNewChild(nextnextByte)
-                        .addWithPos(id, i);
+                    this.trigramRoot.getOrNewChild(byte).getOrNewChild(nextByte).getOrNewChild(nextnextByte).addWithPos(id, i);
                 }
             }
         }
@@ -107,26 +100,22 @@ export class PartialMatchIndex implements Index<string> {
             return this.monogramRoot.getOrNewChild(bytes[0]).get();
         }
         if (bytes.length === 2) {
-            return this.bigramRoot
-                .getOrNewChild(bytes[0])
-                .getOrNewChild(bytes[1]).get();
+            return this.bigramRoot.getOrNewChild(bytes[0]).getOrNewChild(bytes[1]).get();
         }
-        const initialNode = this.trigramRoot
-            .getOrNewChild(bytes[0])
-            .getOrNewChild(bytes[1])
-            .getOrNewChild(bytes[2]);
+        const initialNode = this.trigramRoot.getOrNewChild(bytes[0]).getOrNewChild(bytes[1]).getOrNewChild(bytes[2]);
         let current = initialNode.get();
         if (bytes.length === 3) {
             return current;
         }
         const offsetMap = initialNode.getPositions();
-        for(let i = 1; i < bytes.length - 2; i++) {
+        for (let i = 1; i < bytes.length - 2; i++) {
             const next = this.trigramRoot
                 .getOrNewChild(bytes[i])
-                .getOrNewChild(bytes[i+1])
-                .getOrNewChild(bytes[i+2]).getWithPos(offsetMap, i);
+                .getOrNewChild(bytes[i + 1])
+                .getOrNewChild(bytes[i + 2])
+                .getWithPos(offsetMap, i);
             // intersection
-            current = new Set([...current].filter(id => next.has(id)));
+            current = new Set([...current].filter((id) => next.has(id)));
             if (current.size === 0) {
                 return current;
             }
@@ -143,7 +132,7 @@ export class PartialMatchIndex implements Index<string> {
     public toJsonString(): string {
         return JSON.stringify({
             monogram: this.monogramRoot.toJson(),
-            bigram: this.bigramRoot.toJson()
+            bigram: this.bigramRoot.toJson(),
         });
     }
 }

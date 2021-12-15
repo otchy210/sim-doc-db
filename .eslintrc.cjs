@@ -16,6 +16,11 @@ module.exports = {
         "@typescript-eslint"
     ],
     "rules": {
-        "no-case-declarations": "off"
+        "no-case-declarations": "off",
+        "prettier/prettier": ["error", {
+            "tabWidth": 4,
+            "singleQuote": true,
+            "printWidth": 160,
+        }]
     }
 };

@@ -14,7 +14,7 @@ export type Document = {
     id?: number;
     values: {
         [key: string]: ValueType;
-    }
+    };
 };
 
 export interface Index<T> {
