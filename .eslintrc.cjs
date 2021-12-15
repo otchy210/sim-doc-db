@@ -1,10 +1,10 @@
 module.exports = {
     "env": {
-        "browser": true,
         "es2021": true
     },
     "extends": [
-        "standard"
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -15,5 +15,7 @@ module.exports = {
         "@typescript-eslint"
     ],
     "rules": {
+        "indent": ["error", 4],
+        "no-case-declarations": "off"
     }
 };

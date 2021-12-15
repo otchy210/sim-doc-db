@@ -37,7 +37,7 @@ class TrieNode {
         return new Set([...this.ids].filter(id => {
             const offsets = offsetMap.get(id) ?? [];
             const position = this.positions.get(id);
-            for(let offset of offsets) {
+            for(const offset of offsets) {
                 if (position?.has(offset + index)) {
                     return true;
                 }
@@ -55,6 +55,7 @@ class TrieNode {
     }
 
     public toJson(): object {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const json = {} as any;
         json['___ids___'] = Array.from(this.ids);
         for(let i = 0; i < this.children.length; i++) {

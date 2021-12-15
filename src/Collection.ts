@@ -16,20 +16,20 @@ export class Collection {
                 return;
             }
             switch(type) {
-                case 'string':
-                case 'string[]':
-                    this.indexes.set(name, new PartialMatchIndex());
-                    break;
-                case 'number':
-                case 'number[]':
-                    this.indexes.set(name, new ExactMatchIndex<number>());
-                    break;
-                case 'boolean':
-                    this.indexes.set(name, new ExactMatchIndex<boolean>());
-                    break;
-                case 'tags':
-                    this.indexes.set(name, new ExactMatchIndex<string>());
-                    break;
+            case 'string':
+            case 'string[]':
+                this.indexes.set(name, new PartialMatchIndex());
+                break;
+            case 'number':
+            case 'number[]':
+                this.indexes.set(name, new ExactMatchIndex<number>());
+                break;
+            case 'boolean':
+                this.indexes.set(name, new ExactMatchIndex<boolean>());
+                break;
+            case 'tags':
+                this.indexes.set(name, new ExactMatchIndex<string>());
+                break;
             }
         });
     }
@@ -94,25 +94,25 @@ export class Collection {
             const fieldType = field.type;
             const valueType = typeof value;
             switch (fieldType) {
-                case 'string':
-                case 'number':
-                case 'boolean':
-                    if (fieldType !== valueType) {
-                        throw new Error(`Type mismatched: ${fieldType} -> ${valueType}`);
-                    }
+            case 'string':
+            case 'number':
+            case 'boolean':
+                if (fieldType !== valueType) {
+                    throw new Error(`Type mismatched: ${fieldType} -> ${valueType}`);
+                }
+                break;
+            default: // array
+                if (!Array.isArray(value)) {
+                    throw new Error(`Type mismatched: ${valueType} != array`);
+                }
+                if (value.length === 0) {
                     break;
-                default: // array
-                    if (!Array.isArray(value)) {
-                        throw new Error(`Type mismatched: ${valueType} != array`);
-                    }
-                    if (value.length === 0) {
-                        break;
-                    }
-                    const arrayFieldType = fieldType === 'tags' ? 'string' : fieldType.substring(0, fieldType.length - 2);
-                    const arrayValueType = typeof value[0];
-                    if (arrayFieldType !== arrayValueType) {
-                        throw new Error(`Type mismatched: ${fieldType} -> ${arrayValueType}[]`);
-                    }
+                }
+                const arrayFieldType = fieldType === 'tags' ? 'string' : fieldType.substring(0, fieldType.length - 2);
+                const arrayValueType = typeof value[0];
+                if (arrayFieldType !== arrayValueType) {
+                    throw new Error(`Type mismatched: ${fieldType} -> ${arrayValueType}[]`);
+                }
             }
         }
     }
@@ -134,7 +134,7 @@ export class Collection {
     }
 
     private removeIndex(id: number): void {
-        for(let index of this.indexes.values()) {
+        for(const index of this.indexes.values()) {
             index.remove(id);
         }
     }
@@ -142,7 +142,7 @@ export class Collection {
     public find(query: Query): Set<Document> {
         let current: Set<number> | undefined = undefined;
         // TODO: sort entries for better performance
-        for (let [fieldName, value] of Object.entries(query)) {
+        for (const [fieldName, value] of Object.entries(query)) {
             if (!this.isField(fieldName)) {
                 throw new Error(`Unknown field: ${fieldName}`);
             }
@@ -152,7 +152,7 @@ export class Collection {
             }
             const index = this.indexes.get(fieldName) as Index<PrimitiveType>;
             const values = Array.isArray(value) ? value : [value];
-            for(let val of values) {
+            for(const val of values) {
                 if (current === undefined) {
                     current = index.find(val);
                 } else {
