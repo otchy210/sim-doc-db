@@ -1,23 +1,28 @@
 import { Collection } from './Collection';
 
 describe('Collection', ()=> {
-    const collection = new Collection([{
-        name: 'indexed-string',
-        type: 'string',
-        indexed: true
-    }, {
-        name: 'noindexed-boolean',
-        type: 'boolean',
-        indexed: false
-    }, {
-        name: 'indexed-string-array',
-        type: 'string[]',
-        indexed: true
-    }, {
-        name: 'indexed-number-array',
-        type: 'number[]',
-        indexed: true
-    }]);
+
+    let collection: Collection;
+
+    beforeEach(() => {
+        collection = new Collection([{
+            name: 'indexed-string',
+            type: 'string',
+            indexed: true
+        }, {
+            name: 'noindexed-boolean',
+            type: 'boolean',
+            indexed: false
+        }, {
+            name: 'indexed-string-array',
+            type: 'string[]',
+            indexed: true
+        }, {
+            name: 'indexed-number-array',
+            type: 'number[]',
+            indexed: true
+        }]);
+    });
 
     it('isField works', () => {
         expect(collection.isField('indexed-string')).toBe(true);
@@ -82,5 +87,112 @@ describe('Collection', ()=> {
         expect(collection.add({values: {'noindexed-boolean': false}})).toBeTruthy();
         expect(collection.add({values: {'indexed-string-array': ['a', 'b', 'c']}})).toBeTruthy();
         expect(collection.add({values: {'indexed-number-array': [0, 1, 2]}})).toBeTruthy();
+    });
+
+    it('find works with single document', () => {
+        const collection = new Collection([
+            {name: 'str', type: 'string', indexed: true},
+            {name: 'str-arr', type: 'string[]', indexed: true},
+            {name: 'num', type: 'number', indexed: true},
+            {name: 'num-arr', type: 'number[]', indexed: true},
+            {name: 'bool', type: 'boolean', indexed: true},
+            {name: 'tags', type: 'tags', indexed: true},
+            {name: 'noindex', type: 'string', indexed: false},
+        ]);
+        collection.add({values: {
+            'str': 'aaaaaa',
+            'str-arr': ['bbbbbb', 'cccccc'],
+            'num': 10,
+            'num-arr': [100, 200],
+            'bool': false,
+            'tags': ['abc', 'bcd', 'def']
+        }});
+
+        expect(() => {
+            collection.find({
+                'unknown': [-1]
+            });
+        }).toThrowError('Unknown field:');
+
+        expect(() => {
+            collection.find({
+                'noindex': [-1]
+            });
+        }).toThrowError('No index:');
+
+        expect(collection.find({}).size).toBe(0);
+
+        expect(collection.find({'str': 'aaaa'}).size).toBe(1);
+        expect(collection.find({'str': 'bbbb'}).size).toBe(0);
+        expect(collection.find({'str': ['aaaa', 'bbbb']}).size).toBe(0);
+
+        expect(collection.find({'str-arr': 'bbbb'}).size).toBe(1);
+        expect(collection.find({'str-arr': ['bbbb', 'cccc']}).size).toBe(1);
+        expect(collection.find({'str-arr': 'dddd'}).size).toBe(0);
+
+        expect(collection.find({'num': 10}).size).toBe(1);
+        expect(collection.find({'num': 100}).size).toBe(0);
+        expect(collection.find({'num': [10, 20]}).size).toBe(0);
+
+        expect(collection.find({'num-arr': 100}).size).toBe(1);
+        expect(collection.find({'num-arr': [100, 200]}).size).toBe(1);
+        expect(collection.find({'num-arr': 1000}).size).toBe(0);
+
+        expect(collection.find({'bool': false}).size).toBe(1);
+        expect(collection.find({'bool': true}).size).toBe(0);
+
+        expect(collection.find({'tags': 'abc'}).size).toBe(1);
+        expect(collection.find({'tags': 'ab'}).size).toBe(0);
+        expect(collection.find({'tags': ['abc', 'bcd']}).size).toBe(1);
+
+        expect(collection.find({
+            'str': 'aaaa',
+            'str-arr': ['bbbb', 'cccc'],
+            'num': 10,
+            'num-arr': [100, 200],
+            'bool': false,
+            'tags': ['bcd', 'def'],
+        }).size).toBe(1);
+        expect(collection.find({
+            'str': 'aaaa',
+            'str-arr': ['bbbb', 'cccc'],
+            'num': 10,
+            'num-arr': [100, 200],
+            'bool': false,
+            'tags': ['bcd', 'ef'],
+        }).size).toBe(0);
+    });
+
+    it('find works with multiple documents', () => {
+        const collection = new Collection([
+            {name: 'str', type: 'string', indexed: true},
+            {name: 'str-arr', type: 'string[]', indexed: true},
+            {name: 'num', type: 'number', indexed: true},
+            {name: 'num-arr', type: 'number[]', indexed: true},
+        ]);
+
+        collection.add({values: {'str': 'aaa'}});
+        collection.add({values: {'str': 'bbb'}});
+        collection.add({values: {'num': 10}});
+        collection.add({values: {'num': 20}});
+        collection.add({values: {'str': 'aaa'}});
+        collection.add({values: {'str': 'bbb', 'num': 10}});
+        collection.add({values: {'str': 'bbb', 'num': 20}});
+
+        expect(collection.find({'str': 'aaa'}).size).toBe(2);
+        expect(collection.find({'str': 'bbb'}).size).toBe(3);
+        expect(collection.find({'num': 10}).size).toBe(2);
+        expect(collection.find({'str': 'bbb', 'num': 10}).size).toBe(1);
+        expect(collection.find({'str': 'aaa', 'num': 10}).size).toBe(0);
+
+        collection.add({values: {'str-arr': ['aaa', 'bbb'], 'num-arr': [10, 20]}});
+        collection.add({values: {'str-arr': ['bbb', 'ccc'], 'num-arr': [20, 30]}});
+
+        expect(collection.find({'str-arr': 'aaa'}).size).toBe(1);
+        expect(collection.find({'str-arr': 'bbb'}).size).toBe(2);
+        expect(collection.find({'str-arr': 'bbb', 'num-arr': 10}).size).toBe(1);
+        expect(collection.find({'str-arr': 'bbb', 'num-arr': 20}).size).toBe(2);
+        expect(collection.find({'str-arr': ['bbb', 'ccc'], 'num-arr': 20}).size).toBe(1);
+        expect(collection.find({'str-arr': 'bbb', 'num-arr': [10, 20]}).size).toBe(1);
     });
 });

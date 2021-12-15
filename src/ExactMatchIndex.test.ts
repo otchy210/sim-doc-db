@@ -13,14 +13,14 @@ describe('ExactMatchIndex', () => {
         expect(index.find(300).size).toBe(2);
         expect(index.find(400).size).toBe(1);
 
-        expect(index.remove(1)).toBe(3);
+        expect(index.remove(1));
 
         expect(index.find(100).size).toBe(2);
         expect(index.find(200).size).toBe(1);
         expect(index.find(300).size).toBe(1);
         expect(index.find(400).size).toBe(1);
 
-        expect(index.remove(3)).toBe(3);
+        expect(index.remove(3));
 
         expect(index.find(100).size).toBe(1);
         expect(index.find(200).size).toBe(1);

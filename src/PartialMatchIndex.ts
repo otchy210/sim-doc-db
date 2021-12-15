@@ -1,4 +1,5 @@
 import { toByteArray } from "./TextUtils";
+import { Index } from "./types";
 
 class TrieNode {
     private children = [...Array<TrieNode>(256)];
@@ -67,7 +68,7 @@ class TrieNode {
     }
 }
 
-export class PartialMatchIndex {
+export class PartialMatchIndex implements Index<string> {
     private monogramRoot = new TrieNode();
     private bigramRoot = new TrieNode();
     private trigramRoot = new TrieNode();

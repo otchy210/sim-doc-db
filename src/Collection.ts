@@ -1,30 +1,36 @@
-type PrimitiveType = string | number | boolean;
-
-type ValueType = PrimitiveType | PrimitiveType[];
-
-export type FieldType = 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'boolean[]';
-
-export type Field = {
-    name: string;
-    type: FieldType;
-    indexed: boolean;
-};
-
-export type Document = {
-    id?: number;
-    values: {
-        [key: string]: ValueType;
-    }
-};
+import { ExactMatchIndex } from "./ExactMatchIndex";
+import { PartialMatchIndex } from "./PartialMatchIndex";
+import { Document, Field, Index, PrimitiveType, Query } from "./types";
 
 export class Collection {
-    private counter: number = 0;
-    private fields: Map<string, Field> = new Map();
-    private documents: Map<number, Document> = new Map();
+    private counter = 0;
+    private fields = new Map<string, Field>();
+    private indexes = new Map<string, Index<PrimitiveType>>();
+    private documents = new Map<number, Document>();
 
     constructor(fields: Field[]) {
         fields.forEach(field => {
-            this.fields.set(field.name, field);
+            const {name, type, indexed} = field;
+            this.fields.set(name, field);
+            if (!indexed) {
+                return;
+            }
+            switch(type) {
+                case 'string':
+                case 'string[]':
+                    this.indexes.set(name, new PartialMatchIndex());
+                    break;
+                case 'number':
+                case 'number[]':
+                    this.indexes.set(name, new ExactMatchIndex<number>());
+                    break;
+                case 'boolean':
+                    this.indexes.set(name, new ExactMatchIndex<boolean>());
+                    break;
+                case 'tags':
+                    this.indexes.set(name, new ExactMatchIndex<string>());
+                    break;
+            }
         });
     }
 
@@ -102,7 +108,7 @@ export class Collection {
                     if (value.length === 0) {
                         break;
                     }
-                    const arrayFieldType = fieldType.substring(0, fieldType.length - 2);
+                    const arrayFieldType = fieldType === 'tags' ? 'string' : fieldType.substring(0, fieldType.length - 2);
                     const arrayValueType = typeof value[0];
                     if (arrayFieldType !== arrayValueType) {
                         throw new Error(`Type mismatched: ${fieldType} -> ${arrayValueType}[]`);
@@ -112,8 +118,55 @@ export class Collection {
     }
 
     private addIndex(document: Document): void {
+        const id = document.id as number;
+        Object.entries(document.values).forEach(([fieldName, value]) => {
+            const field = this.getField(fieldName);
+            if (!field.indexed) {
+                return;
+            }
+            const index = this.indexes.get(fieldName) as Index<PrimitiveType>;
+            if (Array.isArray(value)) {
+                index.add(id, value);
+            } else {
+                index.add(id,[value]);
+            }
+        });
     }
 
     private removeIndex(id: number): void {
+        for(let index of this.indexes.values()) {
+            index.remove(id);
+        }
+    }
+
+    public find(query: Query): Set<Document> {
+        let current: Set<number> | undefined = undefined;
+        // TODO: sort entries for better performance
+        for (let [fieldName, value] of Object.entries(query)) {
+            if (!this.isField(fieldName)) {
+                throw new Error(`Unknown field: ${fieldName}`);
+            }
+            const field = this.getField(fieldName);
+            if (!field.indexed) {
+                throw new Error(`No index: ${fieldName}`);
+            }
+            const index = this.indexes.get(fieldName) as Index<PrimitiveType>;
+            const values = Array.isArray(value) ? value : [value];
+            for(let val of values) {
+                if (current === undefined) {
+                    current = index.find(val);
+                } else {
+                    const next = index.find(val);
+                    current = new Set([...current  as Set<number>].filter(id => next.has(id)));
+                }
+                if (current.size === 0) {
+                    return new Set();
+                }
+            }
+        }
+        if (current === undefined) {
+            return new Set();
+        }
+        return new Set([...current as Set<number>].map(id => this.documents.get(id) as Document));
     }
 }
