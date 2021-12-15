@@ -4,7 +4,8 @@ module.exports = {
     },
     "extends": [
         "eslint:recommended",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+        "plugin:prettier/recommended"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -15,7 +16,6 @@ module.exports = {
         "@typescript-eslint"
     ],
     "rules": {
-        "indent": ["error", 4],
         "no-case-declarations": "off"
     }
 };
