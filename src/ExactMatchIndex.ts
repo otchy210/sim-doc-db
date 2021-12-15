@@ -2,6 +2,7 @@ import { Index } from './types';
 
 export class ExactMatchIndex<T> implements Index<T> {
     private map = new Map<T, Set<number>>();
+    private totalSize = 0;
 
     public add(id: number, values: T[]): void {
         values.forEach((value) => {
@@ -9,6 +10,7 @@ export class ExactMatchIndex<T> implements Index<T> {
                 this.map.set(value, new Set());
             }
             this.map.get(value)?.add(id);
+            this.totalSize++;
         });
     }
 
@@ -23,7 +25,12 @@ export class ExactMatchIndex<T> implements Index<T> {
         this.map.forEach((idSet) => {
             if (idSet.has(id)) {
                 idSet.delete(id);
+                this.totalSize--;
             }
         });
+    }
+
+    public size(): number {
+        return this.totalSize;
     }
 }

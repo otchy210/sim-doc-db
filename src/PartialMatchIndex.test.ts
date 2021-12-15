@@ -7,6 +7,7 @@ describe('PartialMatchIndex', () => {
         index.add(1, ['abc', 'def']);
         index.add(2, ['ab', 'de']);
         index.add(3, ['a', 'd']);
+        expect(index.size()).toBe(12);
 
         expect(index.find('a').size).toBe(3);
         expect(index.find('b').size).toBe(2);
@@ -16,6 +17,7 @@ describe('PartialMatchIndex', () => {
         expect(index.find('f').size).toBe(1);
 
         index.remove(1);
+        expect(index.size()).toBe(6);
 
         expect(index.find('a').size).toBe(2);
         expect(index.find('b').size).toBe(1);
@@ -31,6 +33,7 @@ describe('PartialMatchIndex', () => {
         index.add(1, ['aabbcc', 'abcabc']);
         index.add(2, ['aabb', 'bbcc']);
         index.add(3, ['ab', 'bc']);
+        expect(index.size()).toBe(9);
 
         expect(index.find('ab').size).toBe(3);
         expect(index.find('aa').size).toBe(2);
@@ -41,6 +44,7 @@ describe('PartialMatchIndex', () => {
         expect(index.find('dd').size).toBe(0);
 
         index.remove(3);
+        expect(index.size()).toBe(6);
 
         expect(index.find('ab').size).toBe(2);
         expect(index.find('aa').size).toBe(2);
@@ -51,7 +55,9 @@ describe('PartialMatchIndex', () => {
         expect(index.find('dd').size).toBe(0);
 
         index.remove(1);
+        expect(index.size()).toBe(3);
         index.remove(2);
+        expect(index.size()).toBe(0);
 
         expect(index.find('ab').size).toBe(0);
         expect(index.find('aa').size).toBe(0);
@@ -69,6 +75,7 @@ describe('PartialMatchIndex', () => {
         index.add(2, ['aaaccc', 'bccc']);
         index.add(3, ['aaab', 'bbbc']);
         index.add(4, ['aa', 'bb']);
+        expect(index.size()).toBe(11);
 
         expect(index.find('aaa').size).toBe(3);
         expect(index.find('bbb').size).toBe(2);
@@ -80,6 +87,7 @@ describe('PartialMatchIndex', () => {
         expect(index.find('ddd').size).toBe(0);
 
         index.remove(3);
+        expect(index.size()).toBe(8);
 
         expect(index.find('aaa').size).toBe(2);
         expect(index.find('bbb').size).toBe(1);
@@ -96,17 +104,20 @@ describe('PartialMatchIndex', () => {
 
         index.add(1, ['aaaa']);
         index.add(2, ['aaa']);
+        expect(index.size()).toBe(2);
 
         expect(index.find('aaaa').size).toBe(1);
 
         index.add(3, ['bbbba', 'bbbbb']);
         index.add(4, ['bbbaa', 'bbbbb']);
+        expect(index.size()).toBe(6);
 
         expect(index.find('bbbb').size).toBe(2);
         expect(index.find('bbba').size).toBe(2);
 
         index.add(5, ['aaacc']);
         index.add(6, ['aaccc']);
+        expect(index.size()).toBe(10);
 
         expect(index.find('c').size).toBe(2);
         expect(index.find('cc').size).toBe(2);
@@ -117,6 +128,7 @@ describe('PartialMatchIndex', () => {
         expect(index.find('aaaccc').size).toBe(0);
 
         index.remove(6);
+        expect(index.size()).toBe(8);
 
         expect(index.find('c').size).toBe(1);
         expect(index.find('cc').size).toBe(1);
@@ -127,6 +139,7 @@ describe('PartialMatchIndex', () => {
         expect(index.find('aaaccc').size).toBe(0);
 
         index.remove(5);
+        expect(index.size()).toBe(6);
 
         expect(index.find('c').size).toBe(0);
         expect(index.find('cc').size).toBe(0);
@@ -142,6 +155,7 @@ describe('PartialMatchIndex', () => {
         index.add(4, ['あ🙂']);
         index.add(5, ['あ🙂い']);
         index.add(6, ['あ🙂い🙂う']);
+        expect(index.size()).toBe(33);
 
         expect(index.find('あ').size).toBe(6);
         expect(index.find('あい').size).toBe(2);
@@ -152,6 +166,7 @@ describe('PartialMatchIndex', () => {
 
         index.remove(3);
         index.remove(6);
+        expect(index.size()).toBe(20);
 
         expect(index.find('あ').size).toBe(4);
         expect(index.find('あい').size).toBe(1);
@@ -162,6 +177,7 @@ describe('PartialMatchIndex', () => {
 
         index.remove(2);
         index.remove(5);
+        expect(index.size()).toBe(9);
 
         expect(index.find('あ').size).toBe(2);
         expect(index.find('あい').size).toBe(0);
@@ -170,6 +186,7 @@ describe('PartialMatchIndex', () => {
 
         index.remove(1);
         index.remove(4);
+        expect(index.size()).toBe(0);
 
         expect(index.find('あ').size).toBe(0);
         expect(index.find('🙂').size).toBe(0);

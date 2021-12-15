@@ -13,8 +13,12 @@ class TrieNode {
         return this.children[byte];
     }
 
-    public add(id: number): void {
+    public add(id: number): number {
+        if (this.ids.has(id)) {
+            return 0;
+        }
         this.ids.add(id);
+        return 1;
     }
 
     public addWithPos(id: number, pos: number): void {
@@ -48,10 +52,29 @@ class TrieNode {
         );
     }
 
+    public remove(id: number): number {
+        if (this.ids.has(id)) {
+            this.ids.delete(id);
+            this.positions.delete(id);
+            return 1;
+        }
+        return 0;
+    }
+
     public removeRecursively(id: number): void {
-        this.ids.delete(id);
-        this.positions.delete(id);
+        this.remove(id);
         this.children.filter((node) => node).forEach((node) => node.removeRecursively(id));
+    }
+
+    public removeChildren(id: number): number {
+        let removed = 0;
+        for (const child of this.children) {
+            if (!child) {
+                continue;
+            }
+            removed += child.remove(id);
+        }
+        return removed;
     }
 
     public toJson(): object {
@@ -73,6 +96,7 @@ export class PartialMatchIndex implements Index<string> {
     private monogramRoot = new TrieNode();
     private bigramRoot = new TrieNode();
     private trigramRoot = new TrieNode();
+    private totalSize = 0;
 
     public add(id: number, values: string[]): void {
         values.forEach((value) => this.addSingle(id, value));
@@ -82,7 +106,7 @@ export class PartialMatchIndex implements Index<string> {
         const bytes = toByteArray(value);
         for (let i = 0; i < bytes.length; i++) {
             const byte = bytes[i];
-            this.monogramRoot.getOrNewChild(byte).add(id);
+            this.totalSize += this.monogramRoot.getOrNewChild(byte).add(id);
             if (i < bytes.length - 1) {
                 const nextByte = bytes[i + 1];
                 this.bigramRoot.getOrNewChild(byte).getOrNewChild(nextByte).add(id);
@@ -124,9 +148,13 @@ export class PartialMatchIndex implements Index<string> {
     }
 
     public remove(id: number): void {
-        this.monogramRoot.removeRecursively(id);
+        this.totalSize -= this.monogramRoot.removeChildren(id);
         this.bigramRoot.removeRecursively(id);
         this.trigramRoot.removeRecursively(id);
+    }
+
+    public size(): number {
+        return this.totalSize;
     }
 
     public toJsonString(): string {

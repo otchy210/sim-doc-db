@@ -21,6 +21,7 @@ export interface Index<T> {
     add(id: number, values: T[]): void;
     find(value: T): Set<number>;
     remove(id: number): void;
+    size(): number;
 }
 
 export type Query = {

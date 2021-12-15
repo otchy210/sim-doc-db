@@ -7,6 +7,7 @@ describe('ExactMatchIndex', () => {
         index.add(1, [100, 200, 300]);
         index.add(2, [100, 200]);
         index.add(3, [100, 300, 400]);
+        expect(index.size()).toBe(8);
 
         expect(index.find(100).size).toBe(3);
         expect(index.find(200).size).toBe(2);
@@ -14,6 +15,7 @@ describe('ExactMatchIndex', () => {
         expect(index.find(400).size).toBe(1);
 
         expect(index.remove(1));
+        expect(index.size()).toBe(5);
 
         expect(index.find(100).size).toBe(2);
         expect(index.find(200).size).toBe(1);
@@ -21,6 +23,7 @@ describe('ExactMatchIndex', () => {
         expect(index.find(400).size).toBe(1);
 
         expect(index.remove(3));
+        expect(index.size()).toBe(2);
 
         expect(index.find(100).size).toBe(1);
         expect(index.find(200).size).toBe(1);
@@ -37,5 +40,30 @@ describe('ExactMatchIndex', () => {
 
         expect(index.find('aaa').size).toBe(2);
         expect(index.find('aa').size).toBe(1);
+    });
+
+    it('works with boolean', () => {
+        const index = new ExactMatchIndex<boolean>();
+
+        index.add(1, [true]);
+        index.add(2, [false]);
+        index.add(3, [false]);
+        expect(index.size()).toBe(3);
+
+        expect(index.find(true).size).toBe(1);
+        expect(index.find(false).size).toBe(2);
+
+        index.remove(1);
+        expect(index.size()).toBe(2);
+
+        expect(index.find(true).size).toBe(0);
+        expect(index.find(false).size).toBe(2);
+
+        index.remove(2);
+        index.remove(3);
+        expect(index.size()).toBe(0);
+
+        expect(index.find(true).size).toBe(0);
+        expect(index.find(false).size).toBe(0);
     });
 });
