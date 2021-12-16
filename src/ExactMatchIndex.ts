@@ -9,8 +9,11 @@ export class ExactMatchIndex<T> implements Index<T> {
             if (!this.map.has(value)) {
                 this.map.set(value, new Set());
             }
-            this.map.get(value)?.add(id);
-            this.totalSize++;
+            const idSet = this.map.get(value) as Set<number>;
+            if (idSet.size === 0) {
+                this.totalSize++;
+            }
+            idSet.add(id);
         });
     }
 
@@ -25,7 +28,9 @@ export class ExactMatchIndex<T> implements Index<T> {
         this.map.forEach((idSet) => {
             if (idSet.has(id)) {
                 idSet.delete(id);
-                this.totalSize--;
+                if (idSet.size === 0) {
+                    this.totalSize--;
+                }
             }
         });
     }

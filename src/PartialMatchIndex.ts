@@ -14,19 +14,19 @@ class TrieNode {
     }
 
     public add(id: number): number {
-        if (this.ids.has(id)) {
-            return 0;
-        }
+        const isFirstId = this.ids.size === 0;
         this.ids.add(id);
-        return 1;
+        return isFirstId ? 1 : 0;
     }
 
-    public addWithPos(id: number, pos: number): void {
+    public addWithPos(id: number, pos: number): number {
+        const isFirstId = this.ids.size === 0;
         this.add(id);
         if (!this.positions.has(id)) {
             this.positions.set(id, new Set());
         }
         this.positions.get(id)?.add(pos);
+        return isFirstId ? 1 : 0;
     }
 
     public get(): Set<number> {
@@ -56,14 +56,21 @@ class TrieNode {
         if (this.ids.has(id)) {
             this.ids.delete(id);
             this.positions.delete(id);
-            return 1;
+            if (this.ids.size === 0) {
+                return 1;
+            }
         }
         return 0;
     }
 
-    public removeRecursively(id: number): void {
-        this.remove(id);
-        this.children.filter((node) => node).forEach((node) => node.removeRecursively(id));
+    public removeRecursively(id: number): number {
+        let removed = this.remove(id);
+        this.children
+            .filter((node) => node)
+            .forEach((node) => {
+                removed += node.removeRecursively(id);
+            });
+        return removed;
     }
 
     public removeChildren(id: number): number {
@@ -109,10 +116,10 @@ export class PartialMatchIndex implements Index<string> {
             this.totalSize += this.monogramRoot.getOrNewChild(byte).add(id);
             if (i < bytes.length - 1) {
                 const nextByte = bytes[i + 1];
-                this.bigramRoot.getOrNewChild(byte).getOrNewChild(nextByte).add(id);
+                this.totalSize += this.bigramRoot.getOrNewChild(byte).getOrNewChild(nextByte).add(id);
                 if (i < bytes.length - 2) {
                     const nextnextByte = bytes[i + 2];
-                    this.trigramRoot.getOrNewChild(byte).getOrNewChild(nextByte).getOrNewChild(nextnextByte).addWithPos(id, i);
+                    this.totalSize += this.trigramRoot.getOrNewChild(byte).getOrNewChild(nextByte).getOrNewChild(nextnextByte).addWithPos(id, i);
                 }
             }
         }
@@ -149,8 +156,8 @@ export class PartialMatchIndex implements Index<string> {
 
     public remove(id: number): void {
         this.totalSize -= this.monogramRoot.removeChildren(id);
-        this.bigramRoot.removeRecursively(id);
-        this.trigramRoot.removeRecursively(id);
+        this.totalSize -= this.bigramRoot.removeRecursively(id);
+        this.totalSize -= this.trigramRoot.removeRecursively(id);
     }
 
     public size(): number {
