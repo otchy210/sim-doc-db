@@ -1,6 +1,6 @@
 import { ExactMatchIndex } from './ExactMatchIndex';
 import { PartialMatchIndex } from './PartialMatchIndex';
-import { Document, Field, Index, PrimitiveType, Query } from './types';
+import { Document, Field, Index, prefferedFieldTypeSortOrder, PrimitiveType, Query } from './types';
 
 export class Collection {
     private counter = 0;
@@ -141,18 +141,50 @@ export class Collection {
     }
 
     public find(query: Query): Set<Document> {
+        const entries = Object.entries(query)
+            .filter(([fieldName]) => {
+                if (!this.isField(fieldName)) {
+                    throw new Error(`Unknown field: ${fieldName}`);
+                }
+                return true;
+            })
+            .map(([fieldName, value]) => {
+                const field = this.getField(fieldName);
+                return { field, value };
+            })
+            .filter(({ field }) => {
+                if (!field.indexed) {
+                    throw new Error(`No index: ${field.name}`);
+                }
+                return true;
+            })
+            .map(({ field, value }) => {
+                const index = this.indexes.get(field.name) as Index<PrimitiveType>;
+                const values = Array.isArray(value) ? value : [value];
+                return { field, index, values };
+            })
+            .sort((left, right) => {
+                const sizeL = left.index.size();
+                const sizeR = right.index.size();
+                if (sizeL !== sizeR) {
+                    return sizeR - sizeL; // desc order
+                }
+                const typeL = left.field.type;
+                const typeR = right.field.type;
+                if (typeL !== typeR) {
+                    const orderL = prefferedFieldTypeSortOrder.get(typeL) as number;
+                    const orderR = prefferedFieldTypeSortOrder.get(typeR) as number;
+                    return orderL - orderR;
+                }
+                return left.field.name.localeCompare(right.field.name);
+            });
+
+        if (entries.length === 0) {
+            return new Set();
+        }
+
         let current: Set<number> | undefined = undefined;
-        // TODO: sort entries for better performance
-        for (const [fieldName, value] of Object.entries(query)) {
-            if (!this.isField(fieldName)) {
-                throw new Error(`Unknown field: ${fieldName}`);
-            }
-            const field = this.getField(fieldName);
-            if (!field.indexed) {
-                throw new Error(`No index: ${fieldName}`);
-            }
-            const index = this.indexes.get(fieldName) as Index<PrimitiveType>;
-            const values = Array.isArray(value) ? value : [value];
+        for (const { index, values } of entries) {
             for (const val of values) {
                 if (current === undefined) {
                     current = index.find(val);
@@ -164,9 +196,6 @@ export class Collection {
                     return new Set();
                 }
             }
-        }
-        if (current === undefined) {
-            return new Set();
         }
         return new Set([...(current as Set<number>)].map((id) => this.documents.get(id) as Document));
     }

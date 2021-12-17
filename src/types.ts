@@ -4,6 +4,11 @@ export type ValueType = PrimitiveType | PrimitiveType[];
 
 export type FieldType = 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'tags';
 
+export const prefferedFieldTypeSortOrder = (['string[]', 'string', 'tags', 'number[]', 'number', 'boolean'] as FieldType[]).reduce((prev, current, index) => {
+    prev.set(current, index);
+    return prev;
+}, new Map<FieldType, number>());
+
 export type Field = {
     name: string;
     type: FieldType;
