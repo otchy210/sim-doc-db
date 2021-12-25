@@ -1,6 +1,6 @@
 {
   "name": "@otchy/sim-doc-db",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "Simple in memory document database",
   "type": "module",
   "main": "dist/index.js",

@@ -87,6 +87,18 @@ export class Collection {
         return document;
     }
 
+    public removeMatched(query: Query): number {
+        const ids = this.findIds(query);
+        const size = ids.size;
+        if (size === 0) {
+            return size;
+        }
+        ids.forEach((id) => {
+            this.remove(id);
+        });
+        return size;
+    }
+
     private validateValues(document: Document) {
         for (const entry of Object.entries(document.values)) {
             const [fieldName, value] = entry;
@@ -140,7 +152,7 @@ export class Collection {
         }
     }
 
-    public find(query: Query): Set<Document> {
+    public findIds(query: Query): Set<number> {
         const entries = Object.entries(query)
             .filter(([fieldName]) => {
                 if (!this.isField(fieldName)) {
@@ -197,6 +209,11 @@ export class Collection {
                 }
             }
         }
-        return new Set([...(current as Set<number>)].map((id) => this.documents.get(id) as Document));
+        return current as Set<number>;
+    }
+
+    public find(query: Query): Set<Document> {
+        const ids = this.findIds(query);
+        return new Set([...ids].map((id) => this.documents.get(id) as Document));
     }
 }

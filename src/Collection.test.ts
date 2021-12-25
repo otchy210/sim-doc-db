@@ -76,6 +76,16 @@ describe('Collection', () => {
         expect(collection.has(1)).toBe(false);
     });
 
+    it('removeMatched works', () => {
+        collection.add({ values: { 'indexed-string': 'aaa' } });
+        collection.add({ values: { 'indexed-string': 'aaabbb' } });
+        collection.add({ values: { 'indexed-string': 'aaabbbccc' } });
+
+        expect(collection.removeMatched({ 'indexed-string': 'bbb' })).toBe(2);
+        expect(collection.removeMatched({ 'indexed-string': 'ccc' })).toBe(0);
+        expect(collection.removeMatched({ 'indexed-string': 'aaa' })).toBe(1);
+    });
+
     it('validateValues works', () => {
         expect(() => {
             collection.add({ values: { 'unknown-field': true } });
