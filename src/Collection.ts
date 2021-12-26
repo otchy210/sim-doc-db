@@ -27,6 +27,7 @@ export class Collection {
                 case 'boolean':
                     this.indexes.set(name, new ExactMatchIndex<boolean>());
                     break;
+                case 'tag':
                 case 'tags':
                     this.indexes.set(name, new ExactMatchIndex<string>());
                     break;
@@ -114,6 +115,11 @@ export class Collection {
                 case 'number':
                 case 'boolean':
                     if (fieldType !== valueType) {
+                        throw new Error(`Type mismatched: ${fieldType} -> ${valueType}`);
+                    }
+                    break;
+                case 'tag':
+                    if (valueType !== 'string') {
                         throw new Error(`Type mismatched: ${fieldType} -> ${valueType}`);
                     }
                     break;

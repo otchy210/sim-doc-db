@@ -121,6 +121,7 @@ describe('Collection', () => {
             { name: 'num', type: 'number', indexed: true },
             { name: 'num-arr', type: 'number[]', indexed: true },
             { name: 'bool', type: 'boolean', indexed: true },
+            { name: 'tag', type: 'tag', indexed: true },
             { name: 'tags', type: 'tags', indexed: true },
             { name: 'noindex', type: 'string', indexed: false },
         ]);
@@ -131,6 +132,7 @@ describe('Collection', () => {
                 num: 10,
                 'num-arr': [100, 200],
                 bool: false,
+                tag: 'zzz',
                 tags: ['abc', 'bcd', 'def'],
             },
         });
@@ -168,6 +170,9 @@ describe('Collection', () => {
         expect(collection.find({ bool: false }).size).toBe(1);
         expect(collection.find({ bool: true }).size).toBe(0);
 
+        expect(collection.find({ tag: 'zzz' }).size).toBe(1);
+        expect(collection.find({ tag: 'zz' }).size).toBe(0);
+
         expect(collection.find({ tags: 'abc' }).size).toBe(1);
         expect(collection.find({ tags: 'ab' }).size).toBe(0);
         expect(collection.find({ tags: ['abc', 'bcd'] }).size).toBe(1);
@@ -179,6 +184,7 @@ describe('Collection', () => {
                 num: 10,
                 'num-arr': [100, 200],
                 bool: false,
+                tag: 'zzz',
                 tags: ['bcd', 'def'],
             }).size
         ).toBe(1);
@@ -189,6 +195,7 @@ describe('Collection', () => {
                 num: 10,
                 'num-arr': [100, 200],
                 bool: false,
+                tag: 'zzz',
                 tags: ['bcd', 'ef'],
             }).size
         ).toBe(0);
