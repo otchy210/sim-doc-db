@@ -99,6 +99,10 @@ export class Collection {
         return size;
     }
 
+    get size(): number {
+        return this.documents.size;
+    }
+
     private validateValues(document: Document) {
         for (const entry of Object.entries(document.values)) {
             const [fieldName, value] = entry;

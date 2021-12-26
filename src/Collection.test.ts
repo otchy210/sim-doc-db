@@ -42,11 +42,12 @@ describe('Collection', () => {
         }).toThrow('Unknown field name:');
     });
 
-    it('add / has / get / update / remove works', () => {
+    it('add / has / get / update / remove / size works', () => {
         expect(() => {
             collection.add({ id: 99, values: {} });
         }).toThrow('Not new Document:');
         expect(collection.add({ values: { 'indexed-string': 'initial value' } }).id).toBe(1);
+        expect(collection.size).toBe(1);
 
         expect(collection.has(99)).toBe(false);
         expect(() => {
@@ -54,6 +55,7 @@ describe('Collection', () => {
         }).toThrow('Unknown id:');
         expect(collection.has(1)).toBe(true);
         expect(collection.get(1).id).toBe(1);
+        expect(collection.size).toBe(1);
 
         expect(() => {
             collection.update({ values: {} });
@@ -68,22 +70,28 @@ describe('Collection', () => {
             }).values['indexed-string']
         ).toBe('initial value');
         expect(collection.get(1).values['indexed-string']).toBe('updated value');
+        expect(collection.size).toBe(1);
 
         expect(() => {
             collection.remove(99);
         }).toThrow('Unknown id:');
         expect(collection.remove(1).id).toBe(1);
         expect(collection.has(1)).toBe(false);
+        expect(collection.size).toBe(0);
     });
 
     it('removeMatched works', () => {
         collection.add({ values: { 'indexed-string': 'aaa' } });
         collection.add({ values: { 'indexed-string': 'aaabbb' } });
         collection.add({ values: { 'indexed-string': 'aaabbbccc' } });
+        expect(collection.size).toBe(3);
 
         expect(collection.removeMatched({ 'indexed-string': 'bbb' })).toBe(2);
+        expect(collection.size).toBe(1);
         expect(collection.removeMatched({ 'indexed-string': 'ccc' })).toBe(0);
+        expect(collection.size).toBe(1);
         expect(collection.removeMatched({ 'indexed-string': 'aaa' })).toBe(1);
+        expect(collection.size).toBe(0);
     });
 
     it('validateValues works', () => {
