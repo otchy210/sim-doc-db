@@ -1,53 +1,53 @@
 {
-  "name": "@otchy/sim-doc-db",
-  "version": "0.9.7",
-  "description": "Simple in memory document database",
-  "main": "dist/index.js",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "rm -rf dist/* && tsc",
-    "test": "jest",
-    "lint": "eslint src/*",
-    "lint:fix": "eslint --fix src/*",
-    "prepare": "npm run build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/otchy210/sim-doc-db.git"
-  },
-  "author": "Toru Ochiai <npm@otchy.net> (https://twitter.com/otchy)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/otchy210/sim-doc-db/issues"
-  },
-  "homepage": "https://github.com/otchy210/sim-doc-db#readme",
-  "publishConfig": {
-    "access": "public"
-  },
-  "devDependencies": {
-    "@types/jest": "^27.0.3",
-    "@typescript-eslint/eslint-plugin": "^5.7.0",
-    "@typescript-eslint/parser": "^5.7.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-config-standard": "^16.0.3",
-    "eslint-plugin-import": "^2.25.3",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-promise": "^5.2.0",
-    "jest": "^27.4.3",
-    "prettier": "^2.5.1",
-    "ts-jest": "^27.1.0",
-    "typescript": "^4.5.2"
-  },
-  "jest": {
-    "globals": {
-      "ts-jest": {
-        "useESM": true
-      }
+    "name": "@otchy/sim-doc-db",
+    "version": "0.9.8",
+    "description": "Simple in memory document database",
+    "main": "dist/index.js",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "rm -rf dist/* && tsc",
+        "test": "jest",
+        "lint": "eslint src/*",
+        "lint:fix": "eslint --fix src/*",
+        "prepare": "npm run build"
     },
-    "preset": "ts-jest/presets/default-esm"
-  }
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/otchy210/sim-doc-db.git"
+    },
+    "author": "Toru Ochiai <npm@otchy.net> (https://twitter.com/otchy)",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/otchy210/sim-doc-db/issues"
+    },
+    "homepage": "https://github.com/otchy210/sim-doc-db#readme",
+    "publishConfig": {
+        "access": "public"
+    },
+    "devDependencies": {
+        "@types/jest": "^27.0.3",
+        "@typescript-eslint/eslint-plugin": "^5.7.0",
+        "@typescript-eslint/parser": "^5.7.0",
+        "eslint": "^7.32.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-config-standard": "^16.0.3",
+        "eslint-plugin-import": "^2.25.3",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-prettier": "^4.0.0",
+        "eslint-plugin-promise": "^5.2.0",
+        "jest": "^27.4.3",
+        "prettier": "^2.5.1",
+        "ts-jest": "^27.1.0",
+        "typescript": "^4.5.2"
+    },
+    "jest": {
+        "globals": {
+            "ts-jest": {
+                "useESM": true
+            }
+        },
+        "preset": "ts-jest/presets/default-esm"
+    }
 }

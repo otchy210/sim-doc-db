@@ -18,11 +18,13 @@ export type Field = {
     indexed: boolean;
 };
 
+export type Values = {
+    [key: string]: ValueType;
+};
+
 export type Document = {
     id?: number;
-    values: {
-        [key: string]: ValueType;
-    };
+    values: Values;
 };
 
 export interface Index<T> {
