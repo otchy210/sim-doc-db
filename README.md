@@ -7,5 +7,5 @@ Simple in memory document database
 ### Initial setup
 
 ```
-$ git config core.hooksPath .githooks
+$ git config --local core.hooksPath .githooks
 ```
