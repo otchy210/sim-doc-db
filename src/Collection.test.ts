@@ -237,4 +237,16 @@ describe('Collection', () => {
         expect(collection.find({ 'str-arr': ['bbb', 'ccc'], 'num-arr': 20 }).size).toBe(1);
         expect(collection.find({ 'str-arr': 'bbb', 'num-arr': [10, 20] }).size).toBe(1);
     });
+
+    it('getAll works', () => {
+        expect(collection.getAll().size).toBe(0);
+        collection.add({ values: { 'indexed-string': 'value1' } });
+        collection.add({ values: { 'indexed-string': 'value2' } });
+        collection.add({ values: { 'indexed-string': 'value3' } });
+        expect(collection.getAll().size).toBe(3);
+        collection.remove(1);
+        collection.remove(2);
+        collection.remove(3);
+        expect(collection.getAll().size).toBe(0);
+    });
 });

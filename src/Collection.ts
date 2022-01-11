@@ -226,4 +226,8 @@ export class Collection {
         const ids = this.findIds(query);
         return new Set([...ids].map((id) => this.documents.get(id) as Document));
     }
+
+    public getAll(): Set<Document> {
+        return new Set(this.documents.values());
+    }
 }
