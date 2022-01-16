@@ -164,6 +164,10 @@ export class PartialMatchIndex implements Index<string> {
         return this.totalSize;
     }
 
+    public keys(): Map<string, number> {
+        throw new Error('keys() is not supported in PartialMatchIndex');
+    }
+
     public toJsonString(): string {
         return JSON.stringify({
             monogram: this.monogramRoot.toJson(),

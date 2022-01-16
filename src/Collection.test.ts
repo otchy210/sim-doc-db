@@ -25,6 +25,7 @@ describe('Collection', () => {
                 type: 'number[]',
                 indexed: true,
             },
+            { name: 'indexed-tags', type: 'tags', indexed: true },
         ]);
     });
 
@@ -248,5 +249,39 @@ describe('Collection', () => {
         collection.remove(2);
         collection.remove(3);
         expect(collection.getAll().size).toBe(0);
+    });
+
+    it('getKeys works', () => {
+        collection.add({ values: { 'indexed-tags': ['tag1', 'tag2', 'tag3'] } });
+        collection.add({ values: { 'indexed-tags': ['tag2', 'tag3', 'tag4'] } });
+        collection.add({ values: { 'indexed-tags': ['tag2', 'tag4', 'tag6'] } });
+
+        const keys1 = collection.getKeys('indexed-tags');
+        expect(keys1.get('tag1')).toBe(1);
+        expect(keys1.get('tag2')).toBe(3);
+        expect(keys1.get('tag3')).toBe(2);
+        expect(keys1.get('tag4')).toBe(2);
+        expect(keys1.get('tag5')).toBeUndefined();
+        expect(keys1.get('tag6')).toBe(1);
+
+        collection.remove(1);
+
+        const keys2 = collection.getKeys('indexed-tags');
+        expect(keys2.get('tag1')).toBe(0);
+        expect(keys2.get('tag2')).toBe(2);
+        expect(keys2.get('tag3')).toBe(1);
+        expect(keys2.get('tag4')).toBe(2);
+        expect(keys2.get('tag5')).toBeUndefined();
+        expect(keys2.get('tag6')).toBe(1);
+
+        collection.remove(2);
+
+        const keys3 = collection.getKeys('indexed-tags');
+        expect(keys3.get('tag1')).toBe(0);
+        expect(keys3.get('tag2')).toBe(1);
+        expect(keys3.get('tag3')).toBe(0);
+        expect(keys3.get('tag4')).toBe(1);
+        expect(keys3.get('tag5')).toBeUndefined();
+        expect(keys3.get('tag6')).toBe(1);
     });
 });

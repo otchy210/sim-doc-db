@@ -32,6 +32,7 @@ export interface Index<T> {
     find(value: T): Set<number>;
     remove(id: number): void;
     size(): number;
+    keys(): Map<T, number>;
 }
 
 export type Query = {

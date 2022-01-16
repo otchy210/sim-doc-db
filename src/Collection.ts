@@ -46,6 +46,15 @@ export class Collection {
         return this.fields.get(fieldName) as Field;
     }
 
+    public getKeys(fieldName: string): Map<PrimitiveType, number> {
+        const field = this.getField(fieldName);
+        if (!field.indexed) {
+            throw new Error(`Field is not indexed: ${fieldName}`);
+        }
+        const index = this.indexes.get(fieldName) as Index<PrimitiveType>;
+        return index.keys();
+    }
+
     public add(document: Document): Document {
         if (document.id !== undefined) {
             throw new Error(`Not new Document: ${document.id}`);
