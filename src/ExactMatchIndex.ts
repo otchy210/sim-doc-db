@@ -38,4 +38,11 @@ export class ExactMatchIndex<T> implements Index<T> {
     public size(): number {
         return this.totalSize;
     }
+
+    public keys(): Map<T, number> {
+        return Array.from(this.map.entries()).reduce((map, [key, set]) => {
+            map.set(key, set.size);
+            return map;
+        }, new Map<T, number>());
+    }
 }
