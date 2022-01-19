@@ -1,15 +1,23 @@
 import { Index } from './types';
 
+const normalize = <T>(value: T): T => {
+    if (typeof value === 'string') {
+        return (value as string).normalize() as unknown as T;
+    }
+    return value;
+};
+
 export class ExactMatchIndex<T> implements Index<T> {
     private map = new Map<T, Set<number>>();
     private totalSize = 0;
 
     public add(id: number, values: T[]): void {
         values.forEach((value) => {
-            if (!this.map.has(value)) {
-                this.map.set(value, new Set());
+            const normalizedValue = normalize(value);
+            if (!this.map.has(normalizedValue)) {
+                this.map.set(normalizedValue, new Set());
             }
-            const idSet = this.map.get(value) as Set<number>;
+            const idSet = this.map.get(normalizedValue) as Set<number>;
             if (idSet.size === 0) {
                 this.totalSize++;
             }
@@ -18,10 +26,8 @@ export class ExactMatchIndex<T> implements Index<T> {
     }
 
     public find(value: T): Set<number> {
-        if (this.map.has(value)) {
-            return this.map.get(value) as Set<number>;
-        }
-        return new Set();
+        const normalizedValue = normalize(value);
+        return this.map.get(normalizedValue) ?? new Set();
     }
 
     public remove(id: number): void {

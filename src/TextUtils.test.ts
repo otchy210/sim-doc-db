@@ -17,5 +17,15 @@ describe('toByteArray', () => {
         expect(smileBytes[1]).toBe(159);
         expect(smileBytes[2]).toBe(152);
         expect(smileBytes[3]).toBe(132);
+
+        const separatePa = 'ぱ'; // は＋゜
+        const singlePa = 'ぱ'; // ぱ
+        const normalizedSeparatePa = separatePa.normalize();
+        const separatePaBytes = toByteArray(separatePa);
+        const singlePaBytes = toByteArray(singlePa);
+        const normalizedSeparatePaBytes = toByteArray(normalizedSeparatePa);
+        expect(separatePaBytes.length).toBe(6);
+        expect(singlePaBytes.length).toBe(3);
+        expect(normalizedSeparatePaBytes).toStrictEqual(singlePaBytes);
     });
 });

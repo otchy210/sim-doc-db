@@ -110,7 +110,7 @@ export class PartialMatchIndex implements Index<string> {
     }
 
     private addSingle(id: number, value: string): void {
-        const bytes = toByteArray(value);
+        const bytes = toByteArray(value.normalize());
         for (let i = 0; i < bytes.length; i++) {
             const byte = bytes[i];
             this.totalSize += this.monogramRoot.getOrNewChild(byte).add(id);
@@ -126,7 +126,7 @@ export class PartialMatchIndex implements Index<string> {
     }
 
     public find(query: string): Set<number> {
-        const bytes = toByteArray(query);
+        const bytes = toByteArray(query.normalize());
         if (bytes.length === 1) {
             return this.monogramRoot.getOrNewChild(bytes[0]).get();
         }
