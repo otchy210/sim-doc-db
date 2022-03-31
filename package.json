@@ -1,6 +1,6 @@
 {
     "name": "@otchy/sim-doc-db",
-    "version": "0.10.0",
+    "version": "0.10.1",
     "description": "Simple in memory document database",
     "main": "dist/index.js",
     "files": [
@@ -37,6 +37,7 @@
         "eslint-plugin-node": "^11.1.0",
         "eslint-plugin-prettier": "^4.0.0",
         "eslint-plugin-promise": "^5.2.0",
+        "eslint-plugin-unused-imports": "^2.0.0",
         "jest": "^27.4.3",
         "prettier": "^2.5.1",
         "ts-jest": "^27.1.0",

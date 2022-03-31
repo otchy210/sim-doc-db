@@ -13,7 +13,7 @@ module.exports = {
         "sourceType": "module"
     },
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint", "import", "unused-imports"
     ],
     "rules": {
         "no-case-declarations": "off",
@@ -21,6 +21,15 @@ module.exports = {
             "tabWidth": 4,
             "singleQuote": true,
             "printWidth": 160,
-        }]
+        }],
+        "import/order": [
+            "error",
+            {
+                "groups": ["builtin", "external", "internal", "parent", "sibling", "index", "object", "type"],
+                "newlines-between": "never",
+                "alphabetize": { "order": "asc", "caseInsensitive": true },
+            }
+        ],
+        "unused-imports/no-unused-imports": "error"
     }
 };
