@@ -102,4 +102,47 @@ describe('ExactMatchIndex', () => {
         expect(index.find(true).size).toBe(0);
         expect(index.find(false).size).toBe(0);
     });
+
+    it('exports and imports properly', () => {
+        const numberExportIndex = new ExactMatchIndex<number>();
+        numberExportIndex.add(1, [100, 200, 300]);
+        numberExportIndex.add(2, [100, 200]);
+        numberExportIndex.add(3, [100, 300, 400]);
+
+        const exportedNumberIndex = numberExportIndex.export();
+        const numberImportIndex = new ExactMatchIndex<number>();
+        numberImportIndex.import('number', exportedNumberIndex);
+
+        expect(numberImportIndex.size()).toBe(4);
+        expect(numberImportIndex.find(100).size).toBe(3);
+        expect(numberImportIndex.find(200).size).toBe(2);
+        expect(numberImportIndex.find(300).size).toBe(2);
+        expect(numberImportIndex.find(400).size).toBe(1);
+
+        const stringExportIndex = new ExactMatchIndex<string>();
+        stringExportIndex.add(1, ['aaa', 'bbb', 'ccc']);
+        stringExportIndex.add(2, ['aa', 'bb', 'cc']);
+        stringExportIndex.add(3, ['aaa', 'bb', 'ddd']);
+
+        const exportedStringIndex = stringExportIndex.export();
+        const stringImportIndex = new ExactMatchIndex<string>();
+        stringImportIndex.import('string', exportedStringIndex);
+
+        expect(stringImportIndex.size()).toBe(7);
+        expect(stringImportIndex.find('aaa').size).toBe(2);
+        expect(stringImportIndex.find('aa').size).toBe(1);
+
+        const booleanExportIndex = new ExactMatchIndex<boolean>();
+        booleanExportIndex.add(1, [true]);
+        booleanExportIndex.add(2, [false]);
+        booleanExportIndex.add(3, [false]);
+
+        const exportedBooleanIndex = booleanExportIndex.export();
+        const booleanImportIndex = new ExactMatchIndex<boolean>();
+        booleanImportIndex.import('boolean', exportedBooleanIndex);
+
+        expect(booleanImportIndex.size()).toBe(2);
+        expect(booleanImportIndex.find(true).size).toBe(1);
+        expect(booleanImportIndex.find(false).size).toBe(2);
+    });
 });

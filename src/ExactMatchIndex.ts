@@ -1,4 +1,4 @@
-import { Index } from './types';
+import { FieldType, Index } from './types';
 
 const normalize = <T>(value: T): T => {
     if (typeof value === 'string') {
@@ -6,6 +6,33 @@ const normalize = <T>(value: T): T => {
     }
     return value;
 };
+
+const getExportKey = <T>(key: T): string => {
+    if (typeof key === 'string') {
+        return key;
+    }
+    if (typeof key === 'boolean') {
+        return key ? 't' : 'f';
+    }
+    return String(key);
+};
+
+const getImportKey = <T>(key: string, fieldType: FieldType): T => {
+    switch (fieldType) {
+        case 'string':
+        case 'string[]':
+        case 'tag':
+        case 'tags':
+            return key as unknown as T;
+        case 'number':
+        case 'number[]':
+            return Number(key) as unknown as T;
+        case 'boolean':
+            return (key === 't' ? true : false) as unknown as T;
+    }
+};
+
+type ExportType = { s: number; d: { [key: string]: number[] } };
 
 export class ExactMatchIndex<T> implements Index<T> {
     private map = new Map<T, Set<number>>();
@@ -50,5 +77,24 @@ export class ExactMatchIndex<T> implements Index<T> {
             map.set(key, set.size);
             return map;
         }, new Map<T, number>());
+    }
+
+    export(): string {
+        const output: ExportType = { s: this.totalSize, d: {} };
+        this.map.forEach((value, key) => {
+            const exportKey = getExportKey(key);
+            output.d[exportKey] = Array.from(value);
+        });
+        return JSON.stringify(output);
+    }
+
+    import(fieldType: FieldType, data: string): void {
+        this.map = new Map<T, Set<number>>();
+        const input = JSON.parse(data) as ExportType;
+        this.totalSize = input.s;
+        Object.entries(input.d).forEach(([key, values]) => {
+            const importKey = getImportKey<T>(key, fieldType);
+            this.map.set(importKey, new Set(values));
+        });
     }
 }

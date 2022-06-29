@@ -33,6 +33,8 @@ export interface Index<T> {
     remove(id: number): void;
     size(): number;
     keys(): Map<T, number>;
+    // export(): string;
+    // import(fieldType: FieldType, data: string): void;
 }
 
 export type Query = {
