@@ -2,7 +2,7 @@ type JsonPrimitive = string | number | boolean | null;
 
 type JsonArray = JsonPrimitive[] | JsonArray[] | JsonObject[];
 
-type JsonObject = {
+export type JsonObject = {
     [key: string]: JsonPrimitive | JsonArray | JsonObject;
 };
 
@@ -43,8 +43,8 @@ export interface Index<T> {
     remove(id: number): void;
     size(): number;
     keys(): Map<T, number>;
-    // export(): string;
-    // import(fieldType: FieldType, data: string): void;
+    export(): Json;
+    import(data: string, fieldType?: FieldType): void;
 }
 
 export type Query = {

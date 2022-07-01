@@ -214,4 +214,83 @@ describe('PartialMatchIndex', () => {
         index.remove(4);
         expect(index.size()).toBe(0);
     });
+
+    it('exports and imports properly', () => {
+        const singleByteExportIndex = new PartialMatchIndex();
+
+        singleByteExportIndex.add(1, ['abc', 'def']);
+        singleByteExportIndex.add(2, ['ab', 'de']);
+        singleByteExportIndex.add(3, ['a', 'd']);
+
+        const exportedSingleByteIndex = singleByteExportIndex.export();
+        const singleByteImportIndex = new PartialMatchIndex();
+        singleByteImportIndex.import(exportedSingleByteIndex);
+
+        expect(singleByteImportIndex.size()).toBe(6 + 4 + 2);
+        expect(singleByteImportIndex.find('a').size).toBe(3);
+        expect(singleByteImportIndex.find('b').size).toBe(2);
+        expect(singleByteImportIndex.find('c').size).toBe(1);
+        expect(singleByteImportIndex.find('d').size).toBe(3);
+        expect(singleByteImportIndex.find('e').size).toBe(2);
+        expect(singleByteImportIndex.find('f').size).toBe(1);
+
+        const doubleBytesExportIndex = new PartialMatchIndex();
+
+        doubleBytesExportIndex.add(1, ['aabbcc', 'abcabc']);
+        doubleBytesExportIndex.add(2, ['aabb', 'bbcc']);
+        doubleBytesExportIndex.add(3, ['ab', 'bc']);
+
+        const exportedDoubleBytesIndex = doubleBytesExportIndex.export();
+        const doubleBytesImportIndex = new PartialMatchIndex();
+        doubleBytesImportIndex.import(exportedDoubleBytesIndex);
+
+        expect(doubleBytesImportIndex.size()).toBe(3 + 6 + 7);
+        expect(doubleBytesImportIndex.find('ab').size).toBe(3);
+        expect(doubleBytesImportIndex.find('aa').size).toBe(2);
+        expect(doubleBytesImportIndex.find('bb').size).toBe(2);
+        expect(doubleBytesImportIndex.find('bc').size).toBe(3);
+        expect(doubleBytesImportIndex.find('cc').size).toBe(2);
+        expect(doubleBytesImportIndex.find('ca').size).toBe(1);
+        expect(doubleBytesImportIndex.find('dd').size).toBe(0);
+
+        const tripleBytesExportIndex = new PartialMatchIndex();
+
+        tripleBytesExportIndex.add(1, ['aaabbb', 'bbbccc']);
+        tripleBytesExportIndex.add(2, ['aaaccc', 'bccc']);
+        tripleBytesExportIndex.add(3, ['aaab', 'bbbc']);
+        tripleBytesExportIndex.add(4, ['aa', 'bb']);
+
+        const exportedTripleBytesIndex = tripleBytesExportIndex.export();
+        const tripleBytesImportIndex = new PartialMatchIndex();
+        tripleBytesImportIndex.import(exportedTripleBytesIndex);
+
+        expect(tripleBytesImportIndex.find('aaa').size).toBe(3);
+        expect(tripleBytesImportIndex.find('bbb').size).toBe(2);
+        expect(tripleBytesImportIndex.find('ccc').size).toBe(2);
+        expect(tripleBytesImportIndex.find('aab').size).toBe(2);
+        expect(tripleBytesImportIndex.find('bcc').size).toBe(2);
+        expect(tripleBytesImportIndex.find('bbc').size).toBe(2);
+        expect(tripleBytesImportIndex.find('abb').size).toBe(1);
+        expect(tripleBytesImportIndex.find('ddd').size).toBe(0);
+
+        const nonAsciiExportIndex = new PartialMatchIndex();
+
+        nonAsciiExportIndex.add(1, ['あ']);
+        nonAsciiExportIndex.add(2, ['あい']);
+        nonAsciiExportIndex.add(3, ['あいう']);
+        nonAsciiExportIndex.add(4, ['あ🙂']);
+        nonAsciiExportIndex.add(5, ['あ🙂い']);
+        nonAsciiExportIndex.add(6, ['あ🙂い🙂う']);
+
+        const exportedNonAsciiIndex = nonAsciiExportIndex.export();
+        const nonAsciiImportIndex = new PartialMatchIndex();
+        nonAsciiImportIndex.import(exportedNonAsciiIndex);
+
+        expect(nonAsciiImportIndex.find('あ').size).toBe(6);
+        expect(nonAsciiImportIndex.find('あい').size).toBe(2);
+        expect(nonAsciiImportIndex.find('あいう').size).toBe(1);
+        expect(nonAsciiImportIndex.find('🙂').size).toBe(3);
+        expect(nonAsciiImportIndex.find('🙂い').size).toBe(2);
+        expect(nonAsciiImportIndex.find('🙂う').size).toBe(1);
+    });
 });

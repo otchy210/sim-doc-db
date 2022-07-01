@@ -88,7 +88,7 @@ export class ExactMatchIndex<T> implements Index<T> {
         return output;
     }
 
-    import(fieldType: FieldType, data: Json): void {
+    import(data: Json, fieldType: FieldType): void {
         this.map = new Map<T, Set<number>>();
         const input = data as ExportType;
         this.totalSize = input.s;

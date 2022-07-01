@@ -111,7 +111,7 @@ describe('ExactMatchIndex', () => {
 
         const exportedNumberIndex = numberExportIndex.export();
         const numberImportIndex = new ExactMatchIndex<number>();
-        numberImportIndex.import('number', exportedNumberIndex);
+        numberImportIndex.import(exportedNumberIndex, 'number');
 
         expect(numberImportIndex.size()).toBe(4);
         expect(numberImportIndex.find(100).size).toBe(3);
@@ -126,7 +126,7 @@ describe('ExactMatchIndex', () => {
 
         const exportedStringIndex = stringExportIndex.export();
         const stringImportIndex = new ExactMatchIndex<string>();
-        stringImportIndex.import('string', exportedStringIndex);
+        stringImportIndex.import(exportedStringIndex, 'string');
 
         expect(stringImportIndex.size()).toBe(7);
         expect(stringImportIndex.find('aaa').size).toBe(2);
@@ -139,7 +139,7 @@ describe('ExactMatchIndex', () => {
 
         const exportedBooleanIndex = booleanExportIndex.export();
         const booleanImportIndex = new ExactMatchIndex<boolean>();
-        booleanImportIndex.import('boolean', exportedBooleanIndex);
+        booleanImportIndex.import(exportedBooleanIndex, 'boolean');
 
         expect(booleanImportIndex.size()).toBe(2);
         expect(booleanImportIndex.find(true).size).toBe(1);

@@ -1,5 +1,15 @@
 import { toByteArray } from './TextUtils';
-import { Index } from './types';
+import { Index, Json } from './types';
+
+type TrieNodeExportType = {
+    c: {
+        [key: number]: TrieNodeExportType;
+    };
+    i: number[];
+    p: {
+        [key: number]: number[];
+    };
+};
 
 class TrieNode {
     private children = [...Array<TrieNode>(256)];
@@ -84,20 +94,46 @@ class TrieNode {
         return removed;
     }
 
-    public toJson(): object {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const json = {} as any;
-        json['___ids___'] = Array.from(this.ids);
+    public export(): TrieNodeExportType {
+        const output: TrieNodeExportType = {
+            i: Array.from(this.ids),
+            c: {},
+            p: {},
+        };
         for (let i = 0; i < this.children.length; i++) {
             const child = this.children[i];
             if (!child) {
                 continue;
             }
-            json[i] = child.toJson();
+            output.c[i] = child.export();
         }
-        return json;
+        this.positions.forEach((value, key) => {
+            output.p[key] = Array.from(value);
+        });
+        return output;
+    }
+
+    public import(data: TrieNodeExportType): TrieNode {
+        this.ids = new Set(data.i);
+        for (let i = 0; i < this.children.length; i++) {
+            if (data.c[i]) {
+                this.getOrNewChild(i).import(data.c[i]);
+            }
+        }
+        Object.entries(data.p).forEach(([key, value]) => {
+            const index = Number(key);
+            this.positions.set(index, new Set(value));
+        });
+        return this;
     }
 }
+
+type ExportType = {
+    s: number;
+    m: TrieNodeExportType;
+    b: TrieNodeExportType;
+    t: TrieNodeExportType;
+};
 
 export class PartialMatchIndex implements Index<string> {
     private monogramRoot = new TrieNode();
@@ -168,10 +204,21 @@ export class PartialMatchIndex implements Index<string> {
         throw new Error('keys() is not supported in PartialMatchIndex');
     }
 
-    public toJsonString(): string {
-        return JSON.stringify({
-            monogram: this.monogramRoot.toJson(),
-            bigram: this.bigramRoot.toJson(),
-        });
+    export(): Json {
+        const output: ExportType = {
+            s: this.totalSize,
+            m: this.monogramRoot.export(),
+            b: this.bigramRoot.export(),
+            t: this.trigramRoot.export(),
+        };
+        return output;
+    }
+
+    import(data: Json): void {
+        const input = data as ExportType;
+        this.totalSize = input.s;
+        this.monogramRoot = new TrieNode().import(input.m);
+        this.bigramRoot = new TrieNode().import(input.b);
+        this.trigramRoot = new TrieNode().import(input.t);
     }
 }
