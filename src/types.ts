@@ -1,3 +1,13 @@
+type JsonPrimitive = string | number | boolean | null;
+
+type JsonArray = JsonPrimitive[] | JsonArray[] | JsonObject[];
+
+type JsonObject = {
+    [key: string]: JsonPrimitive | JsonArray | JsonObject;
+};
+
+export type Json = JsonPrimitive | JsonArray | JsonObject;
+
 export type PrimitiveType = string | number | boolean;
 
 export type ValueType = PrimitiveType | PrimitiveType[];

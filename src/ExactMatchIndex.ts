@@ -1,4 +1,4 @@
-import { FieldType, Index } from './types';
+import { FieldType, Index, Json } from './types';
 
 const normalize = <T>(value: T): T => {
     if (typeof value === 'string') {
@@ -79,18 +79,18 @@ export class ExactMatchIndex<T> implements Index<T> {
         }, new Map<T, number>());
     }
 
-    export(): string {
+    export(): Json {
         const output: ExportType = { s: this.totalSize, d: {} };
         this.map.forEach((value, key) => {
             const exportKey = getExportKey(key);
             output.d[exportKey] = Array.from(value);
         });
-        return JSON.stringify(output);
+        return output;
     }
 
-    import(fieldType: FieldType, data: string): void {
+    import(fieldType: FieldType, data: Json): void {
         this.map = new Map<T, Set<number>>();
-        const input = JSON.parse(data) as ExportType;
+        const input = data as ExportType;
         this.totalSize = input.s;
         Object.entries(input.d).forEach(([key, values]) => {
             const importKey = getImportKey<T>(key, fieldType);
