@@ -1,4 +1,5 @@
 import { Collection } from './Collection';
+import { Field } from './types';
 
 describe('Collection', () => {
     let collection: Collection;
@@ -283,5 +284,39 @@ describe('Collection', () => {
         expect(keys3.get('tag4')).toBe(1);
         expect(keys3.get('tag5')).toBeUndefined();
         expect(keys3.get('tag6')).toBe(1);
+    });
+
+    it('export / import works', () => {
+        const fields = [
+            { name: 'str', type: 'string', indexed: true },
+            { name: 'str-arr', type: 'string[]', indexed: true },
+            { name: 'num', type: 'number', indexed: true },
+            { name: 'num-arr', type: 'number[]', indexed: true },
+        ] as Field[];
+        const collectionToExport = new Collection(fields);
+
+        collectionToExport.add({ values: { str: 'aaa' } });
+        collectionToExport.add({ values: { str: 'bbb' } });
+        collectionToExport.add({ values: { num: 10 } });
+        collectionToExport.add({ values: { num: 20 } });
+        collectionToExport.add({ values: { str: 'aaa' } });
+        collectionToExport.add({ values: { str: 'bbb', num: 10 } });
+        collectionToExport.add({ values: { str: 'bbb', num: 20 } });
+        const doc1 = collectionToExport.get(1);
+        const doc3 = collectionToExport.get(3);
+        const doc6 = collectionToExport.get(6);
+
+        const exportedCollection = collectionToExport.export();
+        const collecitonToImport = new Collection(fields);
+        collecitonToImport.import(exportedCollection);
+
+        expect(collecitonToImport.find({ str: 'aaa' }).size).toBe(2);
+        expect(collecitonToImport.find({ str: 'bbb' }).size).toBe(3);
+        expect(collecitonToImport.find({ num: 10 }).size).toBe(2);
+        expect(collecitonToImport.find({ str: 'bbb', num: 10 }).size).toBe(1);
+        expect(collecitonToImport.find({ str: 'aaa', num: 10 }).size).toBe(0);
+        expect(collecitonToImport.get(1)).toStrictEqual(doc1);
+        expect(collecitonToImport.get(3)).toStrictEqual(doc3);
+        expect(collecitonToImport.get(6)).toStrictEqual(doc6);
     });
 });

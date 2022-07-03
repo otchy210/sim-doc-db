@@ -44,7 +44,7 @@ export interface Index<T> {
     size(): number;
     keys(): Map<T, number>;
     export(): Json;
-    import(data: string, fieldType?: FieldType): void;
+    import(data: Json, fieldType: FieldType): void;
 }
 
 export type Query = {

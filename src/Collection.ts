@@ -1,6 +1,12 @@
 import { ExactMatchIndex } from './ExactMatchIndex';
 import { PartialMatchIndex } from './PartialMatchIndex';
-import { Document, Field, Index, prefferedFieldTypeSortOrder, PrimitiveType, Query } from './types';
+import { Document, Field, FieldType, Index, Json, prefferedFieldTypeSortOrder, PrimitiveType, Query, Values } from './types';
+
+type ExportType = {
+    c: number;
+    i: { [key: string]: Json };
+    d: { [key: number]: { i: number; v: Json } };
+};
 
 export class Collection {
     private counter = 0;
@@ -15,24 +21,32 @@ export class Collection {
             if (!indexed) {
                 return;
             }
-            switch (type) {
-                case 'string':
-                case 'string[]':
-                    this.indexes.set(name, new PartialMatchIndex());
-                    break;
-                case 'number':
-                case 'number[]':
-                    this.indexes.set(name, new ExactMatchIndex<number>());
-                    break;
-                case 'boolean':
-                    this.indexes.set(name, new ExactMatchIndex<boolean>());
-                    break;
-                case 'tag':
-                case 'tags':
-                    this.indexes.set(name, new ExactMatchIndex<string>());
-                    break;
-            }
+            this.initIndex(name, type);
         });
+    }
+
+    private initIndex(name: string, type: FieldType): Index<PrimitiveType> {
+        switch (type) {
+            case 'string':
+            case 'string[]':
+                const sIndex = new PartialMatchIndex();
+                this.indexes.set(name, sIndex);
+                return sIndex;
+            case 'number':
+            case 'number[]':
+                const nIndex = new ExactMatchIndex<number>();
+                this.indexes.set(name, nIndex);
+                return nIndex;
+            case 'boolean':
+                const bIndex = new ExactMatchIndex<boolean>();
+                this.indexes.set(name, bIndex);
+                return bIndex;
+            case 'tag':
+            case 'tags':
+                const tIndex = new ExactMatchIndex<string>();
+                this.indexes.set(name, tIndex);
+                return tIndex;
+        }
     }
 
     public isField(fieldName: string): boolean {
@@ -238,5 +252,49 @@ export class Collection {
 
     public getAll(): Set<Document> {
         return new Set(this.documents.values());
+    }
+
+    public export(): Json {
+        const c = this.counter;
+        const i: { [key: string]: Json } = {};
+        this.indexes.forEach((index, key) => {
+            i[key] = index.export();
+        });
+        const d: { [key: number]: { i: number; v: Json } } = {};
+        this.documents.forEach((doc, id) => {
+            d[id] = {
+                i: doc.id || 0,
+                v: doc.values,
+            };
+        });
+        const output: ExportType = {
+            c,
+            i,
+            d,
+        };
+        return output;
+    }
+
+    public import(data: Json): Collection {
+        const input = data as ExportType;
+        this.counter = input.c;
+        this.indexes = new Map<string, Index<PrimitiveType>>();
+        Object.entries(input.i).forEach(([name, index]) => {
+            const field = this.fields.get(name);
+            if (!field?.indexed) {
+                return;
+            }
+            this.initIndex(name, field.type).import(index, field.type);
+        });
+        this.documents = new Map<number, Document>();
+        Object.entries(input.d).forEach(([idStr, { i, v }]) => {
+            const id = Number(idStr);
+            const doc: Document = {
+                id: i,
+                values: v as Values,
+            };
+            this.documents.set(id, doc);
+        });
+        return this;
     }
 }

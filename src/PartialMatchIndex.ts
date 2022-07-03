@@ -1,5 +1,5 @@
 import { toByteArray } from './TextUtils';
-import { Index, Json } from './types';
+import { FieldType, Index, Json } from './types';
 
 type TrieNodeExportType = {
     c: {
@@ -214,7 +214,10 @@ export class PartialMatchIndex implements Index<string> {
         return output;
     }
 
-    import(data: Json): void {
+    import(data: Json, fieldType: FieldType = 'string'): void {
+        if (fieldType !== 'string' && fieldType !== 'string[]') {
+            throw new Error(`Unexpected fieldType: ${fieldType}`);
+        }
         const input = data as ExportType;
         this.totalSize = input.s;
         this.monogramRoot = new TrieNode().import(input.m);
