@@ -318,5 +318,19 @@ describe('Collection', () => {
         expect(collecitonToImport.get(1)).toStrictEqual(doc1);
         expect(collecitonToImport.get(3)).toStrictEqual(doc3);
         expect(collecitonToImport.get(6)).toStrictEqual(doc6);
+
+        const collectionToImportAsString = new Collection(fields);
+        const exportedCollectionString = JSON.stringify(exportedCollection);
+        const exportedCollectionJson = JSON.parse(exportedCollectionString);
+        collectionToImportAsString.import(exportedCollectionJson);
+
+        expect(collectionToImportAsString.find({ str: 'aaa' }).size).toBe(2);
+        expect(collectionToImportAsString.find({ str: 'bbb' }).size).toBe(3);
+        expect(collectionToImportAsString.find({ num: 10 }).size).toBe(2);
+        expect(collectionToImportAsString.find({ str: 'bbb', num: 10 }).size).toBe(1);
+        expect(collectionToImportAsString.find({ str: 'aaa', num: 10 }).size).toBe(0);
+        expect(collectionToImportAsString.get(1)).toStrictEqual(doc1);
+        expect(collectionToImportAsString.get(3)).toStrictEqual(doc3);
+        expect(collectionToImportAsString.get(6)).toStrictEqual(doc6);
     });
 });
