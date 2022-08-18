@@ -333,4 +333,38 @@ describe('Collection', () => {
         expect(collectionToImportAsString.get(3)).toStrictEqual(doc3);
         expect(collectionToImportAsString.get(6)).toStrictEqual(doc6);
     });
+
+    it('clears properly', () => {
+        const fields = [
+            { name: 'str', type: 'string', indexed: true },
+            { name: 'str-arr', type: 'string[]', indexed: true },
+            { name: 'num', type: 'number', indexed: true },
+            { name: 'num-arr', type: 'number[]', indexed: true },
+        ] as Field[];
+        const collection = new Collection(fields);
+
+        collection.add({ values: { str: 'aaa' } });
+        collection.add({ values: { str: 'bbb' } });
+        collection.add({ values: { num: 10 } });
+        collection.add({ values: { num: 20 } });
+        collection.add({ values: { str: 'aaa' } });
+        collection.add({ values: { str: 'bbb', num: 10 } });
+        collection.add({ values: { str: 'bbb', num: 20 } });
+
+        expect(collection.size).toBe(7);
+        const docs1 = collection.find({ str: 'aaa' });
+        expect(docs1.size).toBe(2);
+
+        collection.clear();
+
+        expect(collection.size).toBe(0);
+        const docs2 = collection.find({ str: 'aaa' });
+        expect(docs2.size).toBe(0);
+
+        collection.add({ values: { num: 10 } });
+        collection.add({ values: { str: 'bbb', num: 10 } });
+        expect(collection.size).toBe(2);
+        const docs3 = collection.find({ num: 10 });
+        expect(docs3.size).toBe(2);
+    });
 });

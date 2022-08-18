@@ -15,6 +15,10 @@ export class Collection {
     private documents = new Map<number, Document>();
 
     constructor(fields: Field[]) {
+        this.init(fields);
+    }
+
+    private init(fields: Field[]) {
         fields.forEach((field) => {
             const { name, type, indexed } = field;
             this.fields.set(name, field);
@@ -296,5 +300,14 @@ export class Collection {
             this.documents.set(id, doc);
         });
         return this;
+    }
+
+    public clear() {
+        const fields = Array.from(this.fields.entries()).map((item) => item[1]);
+        this.counter = 0;
+        this.fields = new Map<string, Field>();
+        this.indexes = new Map<string, Index<PrimitiveType>>();
+        this.documents = new Map<number, Document>();
+        this.init(fields);
     }
 }
