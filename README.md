@@ -1,6 +1,6 @@
 # sim-doc-db
 
-Simple in memory document database
+Simple in-memory document database.
 
 ## Development
 
