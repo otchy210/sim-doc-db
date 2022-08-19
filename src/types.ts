@@ -12,7 +12,7 @@ export type PrimitiveType = string | number | boolean;
 
 export type ValueType = PrimitiveType | PrimitiveType[];
 
-export type FieldType = 'string' | 'number' | 'boolean' | 'string[]' | 'number[]' | 'tag' | 'tags';
+export type FieldType = 'string' | 'number' | 'boolean' | 'tag' | 'string[]' | 'number[]' | 'tags';
 
 export const prefferedFieldTypeSortOrder = (['string[]', 'string', 'tags', 'tag', 'number[]', 'number', 'boolean'] as FieldType[]).reduce(
     (prev, current, index) => {
