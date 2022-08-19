@@ -22,7 +22,7 @@ On the other hand, it doesn't support storing and indexing JSON directly. Meanin
 You can add this library to your TypeScript / JavaScript project by following command.
 
 ```
-$ npm install --save-dev @otchy/sim-doc-db
+$ npm install @otchy/sim-doc-db
 ```
 
 ### Create collection
