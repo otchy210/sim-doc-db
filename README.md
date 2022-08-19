@@ -134,7 +134,8 @@ If you want to sort the result, of course you can do it.
 ```ts
 import { Document } from '@otchy/sim-doc-db/dist/types';
 
-const sortedResult: Document[] = Array.from(collection.find({ content: '💯' })).sort((left, right) => left.updatedAt - right.updatedAt);
+const result: Document[] = Array.from(collection.find({ content: '💯' }));
+const sortedResult: Document[] = result.sort((left, right) => left.updatedAt - right.updatedAt);
 ```
 
 Note that the type of query result is `Set`, so you need to convert it to `Array` if you need to sort it.
