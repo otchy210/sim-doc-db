@@ -1,7 +1,7 @@
 {
     "name": "@otchy/sim-doc-db",
     "version": "0.12.0",
-    "description": "Simple in memory document database",
+    "description": "SimDoc DB is a simple in-memory document database (NoSQL) written in TypeScript.",
     "main": "dist/index.js",
     "files": [
         "dist"

@@ -3,7 +3,7 @@
 SimDoc DB is a simple in-memory document database (NoSQL) written in TypeScript. Do you think it is reinventing the wheel? Yes, it is, to some extent. But great advantages of what this library has are:
 
 -   It supports full text search for any multibyte characters by default.
-    -   including Japanese (日本語) and emoji (😄).
+    -   Including Japanese (日本語) and emoji (😄).
 -   It doesn't have any dependencies of other libraries at all.
 -   It works on both Node.js as well as web browsers.
 -   It is super lightweight thus super quick.
