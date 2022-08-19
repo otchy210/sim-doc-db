@@ -79,14 +79,16 @@ Each field will be query-able when you set the `indexed` field as `true`. So wit
 Now that you can start adding your documents to the `collection`. The document you add should follow the schema. But note that the data you want to store has to be defined as "values".
 
 ```ts
-const doc1 = collection.add({
+import { Document } from '@otchy/sim-doc-db/dist/types';
+
+const doc1: Document = collection.add({
     values: {
         key: 'doc_key_1',
         content: 'Any text 💯❗️',
         updatedAt: Date.now(),
     },
 });
-const doc2 = collection.add({
+const doc2: Document = collection.add({
     values: {
         key: 'doc_key_2',
         content: 'Text content 💯❗️',
@@ -108,8 +110,10 @@ doc2 = {
 You may notice that each document has an `id` field issued by the library automatically. This `id` is the identifier of each document. So you can `get` the document or `remove` the document with this `id`.
 
 ```ts
-const doc1 = collection.get(1);
-const removedDoc1 = collection.remove(1);
+import { Document } from '@otchy/sim-doc-db/dist/types';
+
+const doc1: Document = collection.get(1);
+const removedDoc1: Document = collection.remove(1);
 ```
 
 ### Query documents
@@ -117,8 +121,10 @@ const removedDoc1 = collection.remove(1);
 Okay, finally you can query the documents as follows!
 
 ```ts
-const result1 = collection.find({ key: 'doc_key_1' });
-const result2 = collection.find({ content: '💯' });
+import { Document } from '@otchy/sim-doc-db/dist/types';
+
+const result1: Set<Document> = collection.find({ key: 'doc_key_1' });
+const result2: Set<Document> = collection.find({ content: '💯' });
 ```
 
 The Set object `result1` has a document where its key exactly matches with "doc_key_1". The set object `result2` has 2 documents where those contents partially match with "💯".
@@ -126,7 +132,9 @@ The Set object `result1` has a document where its key exactly matches with "doc_
 If you want to sort the result, of course you can do it.
 
 ```ts
-const sortedResult = Array.from(collection.find({ content: '💯' })).sort((left, right) => left.updatedAt - right.updatedAt);
+import { Document } from '@otchy/sim-doc-db/dist/types';
+
+const sortedResult: Document[] = Array.from(collection.find({ content: '💯' })).sort((left, right) => left.updatedAt - right.updatedAt);
 ```
 
 Note that the type of query result is `Set`, so you need to convert it to `Array` if you need to sort it.
@@ -136,8 +144,10 @@ Note that the type of query result is `Set`, so you need to convert it to `Array
 When you want to update a document stored in the collection, you first need to know its `id`. Then you can call the `update` method to do so.
 
 ```ts
-const current = Array.from(collection.find({ key: 'doc_key_1' }))[0];
-const updated = {
+import { Document } from '@otchy/sim-doc-db/dist/types';
+
+const current: Document = Array.from(collection.find({ key: 'doc_key_1' }))[0];
+const updated: Document = {
     id: current.id,
     values: {
         ...current.values,
