@@ -140,7 +140,7 @@ const sortedResult: Document[] = result.sort((left, right) => left.updatedAt - r
 
 Note that the type of query result is `Set`, so you need to convert it to `Array` if you need to sort it.
 
-### Update docment
+### Update document
 
 When you want to update a document stored in the collection, you first need to know its `id`. Then you can call the `update` method to do so.
 
@@ -181,6 +181,150 @@ SimDoc DB は TypeScript で書かれたシンプルなインメモリドキュ�
 なので、もしウェブブラウザ上で動作する SPA で使うシンプルなインメモリ DB を探しているのなら、このライブラリが完璧にマッチするかもしれません。
 
 一方で、JSON を直接保存したり検索対象にしたりといったことはサポートしていません。つまり、多階層のデータ構造をそのまま扱うことは出来ないという事です。また、「より小さい」「より大きい」のような範囲検索もサポートしていません。これは、このライブラリを超軽量・超高速に保つためのトレードオフです。
+
+## 使い方
+
+### ライブラリのインストール
+
+TypeScript あるいは JavaScript のプロジェクトに以下のコマンドでこのライブラリを追加することが出来ます。
+
+```
+$ npm install @otchy/sim-doc-db
+```
+
+### コレクションの作成
+
+いったんこのライブラリを追加したらコードを書き始めることが出来ます。まず一番最初にしないといけないのは、`Collection` を作成することです。
+
+```ts
+import { Collection } from '@otchy/sim-doc-db';
+import { Field } from '@otchy/sim-doc-db/dist/types';
+
+const SCHEMA: Field[] = [
+    {
+        name: 'key',
+        type: 'tag',
+        indexed: true,
+    },
+    {
+        name: 'content',
+        type: 'string',
+        indexed: true,
+    },
+    {
+        name: 'updatedAt',
+        type: 'number',
+        indexed: false,
+    },
+];
+
+const collection = new Collection(SCHEMA);
+```
+
+上記を見ると分かるように、`Collection` インスタンスを作成する時は、`Field` オブジェクトの配列からなるスキーマを定義する必要があります。このスキーマは、このコレクションに保存されるドキュメントの各フィールドを表しています。
+
+各フィールドは以下のように定義される `type` を持ちます。
+
+```ts
+export type FieldType = 'string' | 'number' | 'boolean' | 'tag' | 'string[]' | 'number[]' | 'tags';
+```
+
+| type     | note                                   |
+| -------- | -------------------------------------- |
+| string   | 全文検索をサポートするテキスト型       |
+| number   | 完全一致検索のみサポートする数値型     |
+| boolean  | 完全一致検索のみサポートする真偽値型   |
+| tag      | 完全一致検索のみサポートするテキスト型 |
+| string[] | string 型の配列                        |
+| number[] | number 型の配列                        |
+| tags     | tag 型の配列                           |
+
+各フィールドは `indexed` を `true` にすると検索可能になります。従って、この例の`SCHEMA` では、"key" フィールドの完全一致検索および "content" フィールドの全文検索 (部分一致検索) を行う事が出来る一方、"updatedAt" フィールドで検索することは出来ません。
+
+### ドキュメントの追加
+
+この段階で `collection` にドキュメントを追加し始めることが出来ます。追加するドキュメントは定義済みのスキーマに沿っている必要があります。保存するデータは "values" プロパティとして定義して下さい。
+
+```ts
+import { Document } from '@otchy/sim-doc-db/dist/types';
+
+const doc1: Document = collection.add({
+    values: {
+        key: 'doc_key_1',
+        content: 'Any text 💯❗️',
+        updatedAt: Date.now(),
+    },
+});
+const doc2: Document = collection.add({
+    values: {
+        key: 'doc_key_2',
+        content: 'Text content 💯❗️',
+        updatedAt: Date.now(),
+    },
+});
+/*
+doc1 = {
+    id: 1,
+    values: ...,
+};
+doc2 = {
+    id: 2,
+    values: ...,
+};
+*/
+```
+
+ライブラリによって `id` フィールドが自動的に発行されていることに気付いたでしょうか。この `id` は各ドキュメントの識別子です。ですので、この `id` を使用してドキュメントを取得 (`get`) したり、削除 (`remove`) したりする事が出来ます。
+
+```ts
+import { Document } from '@otchy/sim-doc-db/dist/types';
+
+const doc1: Document = collection.get(1);
+const removedDoc1: Document = collection.remove(1);
+```
+
+### ドキュメントの検索
+
+さてついに、以下のようにドキュメントを検索することが出来るようになりました！
+
+```ts
+import { Document } from '@otchy/sim-doc-db/dist/types';
+
+const result1: Set<Document> = collection.find({ key: 'doc_key_1' });
+const result2: Set<Document> = collection.find({ content: '💯' });
+```
+
+ここで、Set オブジェクトの `result1` は、key が "doc_key_1" に完全一致する 一つのドキュメントを持ちます。Set オブジェクトの `result2` は、content が "💯" に部分一致する二つのドキュメントを持ちます。
+
+検索結果をソートしたい場合も、もちろん可能です。
+
+```ts
+import { Document } from '@otchy/sim-doc-db/dist/types';
+
+const result: Document[] = Array.from(collection.find({ content: '💯' }));
+const sortedResult: Document[] = result.sort((left, right) => left.updatedAt - right.updatedAt);
+```
+
+検索結果が `Set` である事に留意して下さい。従って、ソートをする場合は `Array` に変換する必要があります。
+
+### ドキュメントの更新
+
+コレクションに保存したドキュメントを更新する場合、まずその `id` を取得する必要があります。その後に、`update` メソッドを呼び出してドキュメントの更新をします。
+
+```ts
+import { Document } from '@otchy/sim-doc-db/dist/types';
+
+const current: Document = Array.from(collection.find({ key: 'doc_key_1' }))[0];
+const updated: Document = {
+    id: current.id,
+    values: {
+        ...current.values,
+        content: 'Updated!',
+        updatedAt: Date.now(),
+    },
+};
+collection.update(updated);
+```
 
 ## Development
 
