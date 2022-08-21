@@ -159,9 +159,25 @@ const updated: Document = {
 collection.update(updated);
 ```
 
-<!--
 ### Export and import
 
+SimDoc DB itself doesn't have persistence because it is designed as a simple in-memory database. But it supports `export` and `import`, so you can use it if you want to save the database persistently.
+
+```ts
+import { Collection } from '@otchy/sim-doc-db';
+import { Json } from '@otchy/sim-doc-db/dist/types';
+
+const jsonData: Json = collection.export();
+const textData = Json.stringify(jsonData);
+// save it somewhere
+
+const copiedCollection = new Collection(SCHEMA);
+copiedCollection.import(jsonData);
+```
+
+The format of the dumped data is `Json`. So you can `stringify` it to save the data on disk for example. You then of cource can `import` the data as needed.
+
+<!--
 ### Multi-layerd data
 
 ### Emulatin range search
@@ -325,6 +341,24 @@ const updated: Document = {
 };
 collection.update(updated);
 ```
+
+### エクスポートとインポート
+
+SimDoc DB 自身はシンプルなインメモリデータベースとしてデザインされているため永続性を持ちません。ですが、エクスポート (`export`) とインポート (`import`) をサポートしているため、データベースを永続的に保存することも出来ます。
+
+```ts
+import { Collection } from '@otchy/sim-doc-db';
+import { Json } from '@otchy/sim-doc-db/dist/types';
+
+const jsonData: Json = collection.export();
+const textData = Json.stringify(jsonData);
+// これをどこかに保存する
+
+const copiedCollection = new Collection(SCHEMA);
+copiedCollection.import(jsonData);
+```
+
+ダンプされたデータのフォーマットは `Json` です。従って、文字列化 (`stringify`) した上で例えばディスク上に保存することが出来ます。そしてもちろんそのデータを必要に応じてインポート (`import`) できます。
 
 ## Development
 
