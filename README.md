@@ -515,6 +515,163 @@ copiedCollection.import(jsonData);
 
 ダンプされたデータのフォーマットは `Json` です。従って、文字列化 (`stringify`) した上で例えばディスク上に保存することが出来ます。そしてもちろんそのデータを必要に応じてインポート (`import`) できます。
 
+### 多階層のデータ構造
+
+最初に述べたように、このライブラリは多階層のデータ構造を扱うことは出来ません。ですがどうしてもそういったデータ構造が必要な場合、以下の方法でエミュレートすることが出来ます。
+
+```ts
+import { Collection } from '@otchy/sim-doc-db';
+import { Field } from '@otchy/sim-doc-db/dist/types';
+
+const SCHEMA: Field[] = [
+    {
+        name: 'groupId',
+        type: 'number',
+        indexed: true,
+    },
+    {
+        name: 'name',
+        type: 'string',
+        indexed: true,
+    },
+    {
+        name: 'members',
+        type: 'string[]',
+        indexed: false,
+    },
+];
+
+type Member = {
+    memberId: number;
+    name: string;
+};
+
+type Group = {
+    groupId: number;
+    name: string;
+    members: Member[];
+};
+
+const collection = new Collection(SCHEMA);
+
+const addGroup = ({ groupId, name, members }: Group) => {
+    collection.add({
+        values: {
+            groupId,
+            name,
+            members: members.map((member: Member) => JSON.stringify(member)),
+        },
+    });
+};
+
+const getGroup = (groupId: number): Group => {
+    const doc = Array.from(collection.find({ groupId }))[0];
+    return {
+        groupId: doc.values.groupId,
+        name: doc.values.name,
+        members: doc.values.members.map((member) => JSON.parse(member) as Member),
+    };
+};
+```
+
+このパターンの欠点は、Member の name で検索することが出来ない点です。`` collection.find({ members: `"name":"${name}"` }) `` のように JSON 文字列を検索することは可能ですが、かなりのハックですしお勧め出来ません。
+
+別の案として、下記のような方法もあります。
+
+```ts
+import { Collection } from '@otchy/sim-doc-db';
+import { Field } from '@otchy/sim-doc-db/dist/types';
+
+const GROUP_SCHEMA: Field[] = [
+    {
+        name: 'groupId',
+        type: 'number',
+        indexed: true,
+    },
+    {
+        name: 'name',
+        type: 'string',
+        indexed: true,
+    },
+    {
+        name: 'memberIds',
+        type: 'number[]',
+        indexed: true,
+    },
+];
+
+const MEMBER_SCHEMA: Field[] = [
+    {
+        name: 'memberId',
+        type: 'number',
+        indexed: true,
+    },
+    {
+        name: 'groupId',
+        type: 'number',
+        indexed: false,
+    },
+    {
+        name: 'name',
+        type: 'string',
+        indexed: true,
+    },
+];
+
+type Member = {
+    memberId: number;
+    groupId: number;
+    name: string;
+};
+
+type Group = {
+    groupId: number;
+    members: Member[];
+};
+
+const groupCollection = new Collection(GROUP_SCHEMA);
+const memberCollection = new Collection(MEMBER_SCHEMA);
+
+const addGroup = ({ groupId, name, members }: Group) => {
+    groupCollection.add({
+        values: {
+            groupId,
+            name,
+            memberIds: members.map((member) => member.memberId),
+        },
+    });
+    members.forEach(({ memberId, name }) => {
+        memberCollection.add({
+            values: {
+                memberId,
+                groupId,
+                name,
+            },
+        });
+    });
+};
+
+const getGroup = (groupId: number): Group => {
+    const groupDoc = Array.from(groupCollection.find({ groupId }))[0];
+    const members = groupDoc.values.memberIds.map((memberId) => {
+        return Array.from(memberCollection.find({ memberId }))[0].values as Member;
+    });
+    return {
+        groupId: groupDoc.values.groupId,
+        name: groupDoc.values.name,
+        members,
+    };
+};
+
+const findByMemberName = (name: string): Group => {
+    const memberDoc = Array.from(memberCollection.find({ name }))[0];
+    const groupId = memberDoc.values.groupId;
+    return getGroup(groupId);
+};
+```
+
+このパターンは RDB で多階層のデータ構造を扱う方法と似ています。ただ、SimDoc DB が SQL をサポートするわけでは無いので、"JOIN" 相当のデータ操作を自分で実装する必要があります。
+
 ## Development
 
 ### Initial setup
