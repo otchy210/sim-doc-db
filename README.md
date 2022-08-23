@@ -177,9 +177,164 @@ copiedCollection.import(jsonData);
 
 The format of the dumped data is `Json`. So you can `stringify` it to save the data on disk for example. You then of cource can `import` the data as needed.
 
-<!--
 ### Multi-layerd data
 
+As this document describes earlier, this library doesn't handle multi-layered data structure by design. But if you really need such kind of data structure, you can emulate it as follows.
+
+```ts
+import { Collection } from '@otchy/sim-doc-db';
+import { Field } from '@otchy/sim-doc-db/dist/types';
+
+const SCHEMA: Field[] = [
+    {
+        name: 'groupId',
+        type: 'number',
+        indexed: true,
+    },
+    {
+        name: 'name',
+        type: 'string',
+        indexed: true,
+    },
+    {
+        name: 'members',
+        type: 'string[]',
+        indexed: false,
+    },
+];
+
+type Member = {
+    memberId: number;
+    name: string;
+};
+
+type Group = {
+    groupId: number;
+    name: string;
+    members: Member[];
+};
+
+const collection = new Collection(SCHEMA);
+
+const addGroup = ({ groupId, name, members }: Group) => {
+    collection.add({
+        values: {
+            groupId,
+            name,
+            members: members.map((member: Member) => JSON.stringify(member)),
+        },
+    });
+};
+
+const getGroup = (groupId: number): Group => {
+    const doc = Array.from(collection.find({ groupId }))[0];
+    return {
+        groupId: doc.values.groupId,
+        name: doc.values.name,
+        members: doc.values.members.map((member) => JSON.parse(member) as Member),
+    };
+};
+```
+
+The downside of this pattern is that you can't query it by the member's name. It is possible to do `` collection.find({ members: `"name":"${name}"` }) `` to search JSON string. But that is pretty hacky and is not recommended.
+
+Alternatively, you can do the following as well.
+
+```ts
+import { Collection } from '@otchy/sim-doc-db';
+import { Field } from '@otchy/sim-doc-db/dist/types';
+
+const GROUP_SCHEMA: Field[] = [
+    {
+        name: 'groupId',
+        type: 'number',
+        indexed: true,
+    },
+    {
+        name: 'name',
+        type: 'string',
+        indexed: true,
+    },
+    {
+        name: 'memberIds',
+        type: 'number[]',
+        indexed: true,
+    },
+];
+
+const MEMBER_SCHEMA: Field[] = [
+    {
+        name: 'memberId',
+        type: 'number',
+        indexed: true,
+    },
+    {
+        name: 'groupId',
+        type: 'number',
+        indexed: false,
+    },
+    {
+        name: 'name',
+        type: 'string',
+        indexed: true,
+    },
+];
+
+type Member = {
+    memberId: number;
+    groupId: number;
+    name: string;
+};
+
+type Group = {
+    groupId: number;
+    members: Member[];
+};
+
+const groupCollection = new Collection(GROUP_SCHEMA);
+const memberCollection = new Collection(MEMBER_SCHEMA);
+
+const addGroup = ({ groupId, name, members }: Group) => {
+    groupCollection.add({
+        values: {
+            groupId,
+            name,
+            memberIds: members.map((member) => member.memberId),
+        },
+    });
+    members.forEach(({ memberId, name }) => {
+        memberCollection.add({
+            values: {
+                memberId,
+                groupId,
+                name,
+            },
+        });
+    });
+};
+
+const getGroup = (groupId: number): Group => {
+    const groupDoc = Array.from(groupCollection.find({ groupId }))[0];
+    const members = groupDoc.values.memberIds.map((memberId) => {
+        return Array.from(memberCollection.find({ memberId }))[0].values as Member;
+    });
+    return {
+        groupId: groupDoc.values.groupId,
+        name: groupDoc.values.name,
+        members,
+    };
+};
+
+const findByMemberName = (name: string): Group => {
+    const memberDoc = Array.from(memberCollection.find({ name }))[0];
+    const groupId = memberDoc.values.groupId;
+    return getGroup(groupId);
+};
+```
+
+This pattern is similar to how RDB handles multi-layered data. But you need to "JOIN" it by yourself since SimDoc DB doesn't support SQL.
+
+<!--
 ### Emulatin range search
 -->
 
