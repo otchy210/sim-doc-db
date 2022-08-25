@@ -13,7 +13,7 @@ SimDoc DB is a simple in-memory document database (NoSQL) written in TypeScript.
 
 So if you're looking for a simple in-memory DB solution for SPA running on web browsers, it can be a perfect solution.
 
-On the other hand, it doesn't support storing and indexing JSON directly. Meaning, it can't handle multi-layered data structure. Also it doesn't support range search such as "less-than" or "greater-than". This is a tradeoff of keeping this library super lightweight and quick.
+On the other hand, it doesn't support storing and indexing JSON directly. Meaning, it can't handle multi-layered data structure. Also it doesn't support range search such as "less-than" or "greater-than". This is a tradeoff of keeping this library super lightweight and quick. There is workaround ([1](#multi-layerd-data), [2](#query-documents)) to support those features actually, but SimDoc DB is not the right choice if you do those frequently.
 
 ## How to use
 
@@ -336,7 +336,7 @@ This pattern is similar to how RDB handles multi-layered data. But you need to "
 
 ### Range search
 
-As this document describes earlier, this library doesn't support range search such as "less-than" or "greater-than" by design. You can't emulate it perfectly, but you can do similar search if you really need it.
+As this document describes earlier, this library doesn't support range search such as "less-than" or "greater-than" by design. You can't emulate it perfectly, but you can do a sort of similar search if you really need it.
 
 ```ts
 import { Collection } from '@otchy/sim-doc-db';
@@ -418,7 +418,7 @@ const getAdultPeople = () => {
 };
 ```
 
-This is not perfect solution, but can cover a lot of real use cases.
+This is not a perfect solution but can cover a lot of real use cases.
 
 # 日本語
 
