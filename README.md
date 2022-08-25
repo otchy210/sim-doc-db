@@ -334,9 +334,91 @@ const findByMemberName = (name: string): Group => {
 
 This pattern is similar to how RDB handles multi-layered data. But you need to "JOIN" it by yourself since SimDoc DB doesn't support SQL.
 
-<!--
-### Emulatin range search
--->
+### Range search
+
+As this document describes earlier, this library doesn't support range search such as "less-than" or "greater-than" by design. You can't emulate it perfectly, but you can do similar search if you really need it.
+
+```ts
+import { Collection } from '@otchy/sim-doc-db';
+import { Field, Query } from '@otchy/sim-doc-db/dist/types';
+
+const SCHEMA: Field[] = [
+    {
+        name: 'name',
+        type: 'string',
+        indexed: true,
+    },
+    {
+        name: 'age',
+        type: 'number',
+        indexed: false,
+    },
+    {
+        name: 'ageCategory',
+        type: 'tags',
+        indexed: true,
+    },
+    {
+        name: 'isAdult',
+        type: 'boolean',
+        indexed: true,
+    },
+];
+
+type Person = {
+    name: string;
+    age: number;
+};
+
+type AgeCategory = '<20' | '20-39' | '40-59' | '>=60';
+
+const getAgeCategory = (age: number): AgeCategory => {
+    if (age < 20) {
+        return '<20';
+    } else if (age < 40) {
+        return '20-39';
+    } else if (age < 60) {
+        return '40-59';
+    } else {
+        return '>=60';
+    }
+};
+
+const getIsAdult = (age: number): boolean => {
+    return age >= 18;
+};
+
+const collection = new Collection(SCHEMA);
+
+const addPerson = ({ name, age }: Person) => {
+    const ageCategory = getAgeCategory(age);
+    const isAdult = getIsAdult(age);
+    collection.add({
+        values: {
+            name,
+            age,
+            ageCategory,
+            isAdult,
+        },
+    });
+};
+
+const getPeople = (query: Query): Person[] => {
+    return Array.from(collection.find(query)).map((doc) => {
+        const { name, age } = doc.values;
+        return { name, age } as Person;
+    });
+};
+
+const getPeopleInAgeCategory = (ageCategory: AgeCategory): Person[] => {
+    return getPeople({ ageCategory });
+};
+const getAdultPeople = () => {
+    return getPeople({ isAdult: true });
+};
+```
+
+This is not perfect solution, but can cover a lot of real use cases.
 
 # 日本語
 
