@@ -433,7 +433,7 @@ SimDoc DB は TypeScript で書かれたシンプルなインメモリドキュ�
 
 なので、もしウェブブラウザ上で動作する SPA で使うシンプルなインメモリ DB を探しているのなら、このライブラリが完璧にマッチするかもしれません。
 
-一方で、JSON を直接保存したり検索対象にしたりといったことはサポートしていません。つまり、多階層のデータ構造をそのまま扱うことは出来ないという事です。また、「より小さい」「より大きい」のような範囲検索もサポートしていません。これは、このライブラリを超軽量・超高速に保つためのトレードオフです。
+一方で、JSON を直接保存したり検索対象にしたりといったことはサポートしていません。つまり、多階層のデータ構造をそのまま扱うことは出来ないという事です。また、「より小さい」「より大きい」のような範囲検索もサポートしていません。これは、このライブラリを超軽量・超高速に保つためのトレードオフです。実際の所これらの機能を実現する代替策 ([1](#多階層のデータ構造), [2](#範囲検索)) はありますが、これらが頻繁に必要になる場合、SimDoc DB は適切な選択肢ではありません。
 
 ## 使い方
 
@@ -753,6 +753,92 @@ const findByMemberName = (name: string): Group => {
 ```
 
 このパターンは RDB で多階層のデータ構造を扱う方法と似ています。ただ、SimDoc DB が SQL をサポートするわけでは無いので、"JOIN" 相当のデータ操作を自分で実装する必要があります。
+
+### 範囲検索
+
+最初に述べたように、このライブラリは「より小さい」「より大きい」のような範囲検索もサポートしていません。ですがどうしても必要な場合、完全にエミュレート出来ないまでも似たような検索を行う事は出来ます。
+
+```ts
+import { Collection } from '@otchy/sim-doc-db';
+import { Field, Query } from '@otchy/sim-doc-db/dist/types';
+
+const SCHEMA: Field[] = [
+    {
+        name: 'name',
+        type: 'string',
+        indexed: true,
+    },
+    {
+        name: 'age',
+        type: 'number',
+        indexed: false,
+    },
+    {
+        name: 'ageCategory',
+        type: 'tags',
+        indexed: true,
+    },
+    {
+        name: 'isAdult',
+        type: 'boolean',
+        indexed: true,
+    },
+];
+
+type Person = {
+    name: string;
+    age: number;
+};
+
+type AgeCategory = '<20' | '20-39' | '40-59' | '>=60';
+
+const getAgeCategory = (age: number): AgeCategory => {
+    if (age < 20) {
+        return '<20';
+    } else if (age < 40) {
+        return '20-39';
+    } else if (age < 60) {
+        return '40-59';
+    } else {
+        return '>=60';
+    }
+};
+
+const getIsAdult = (age: number): boolean => {
+    return age >= 18;
+};
+
+const collection = new Collection(SCHEMA);
+
+const addPerson = ({ name, age }: Person) => {
+    const ageCategory = getAgeCategory(age);
+    const isAdult = getIsAdult(age);
+    collection.add({
+        values: {
+            name,
+            age,
+            ageCategory,
+            isAdult,
+        },
+    });
+};
+
+const getPeople = (query: Query): Person[] => {
+    return Array.from(collection.find(query)).map((doc) => {
+        const { name, age } = doc.values;
+        return { name, age } as Person;
+    });
+};
+
+const getPeopleInAgeCategory = (ageCategory: AgeCategory): Person[] => {
+    return getPeople({ ageCategory });
+};
+const getAdultPeople = () => {
+    return getPeople({ isAdult: true });
+};
+```
+
+これは完全な解決策ではありませんが、現実的なユースケースの多くをカバーすることが出来ます。
 
 ## Development
 
